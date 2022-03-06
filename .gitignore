@@ -1,0 +1,12 @@
+# Binaries for programs and plugins
+main
+klonol
+*.exe
+*.exe~
+*.so
+*.dylib
+*.dll
+vls.log
+
+# Enviroment files
+*.env
