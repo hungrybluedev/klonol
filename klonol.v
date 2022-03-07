@@ -11,7 +11,7 @@ fn main() {
 
 	fp.application(name)
 	fp.version(version)
-	fp.description(description)
+	fp.description('$description\n$instructions')
 	fp.skip_executable()
 
 	provider_str := fp.string('provider', `p`, 'github', 'git provider to use').to_lower()
