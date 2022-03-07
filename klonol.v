@@ -1,34 +1,61 @@
 module main
 
+import flag
+import git
 import gitea
-// import github
+import github
 import os
 
 fn main() {
-	base_url := os.getenv_opt('GITEA_BASE_URL') or {
-		eprintln('Please set an environment variable GITEA_BASE_URL with the value being the base URL of your Gitea instance.')
+	mut fp := flag.new_flag_parser(os.args)
+
+	fp.application(name)
+	fp.version(version)
+	fp.description(description)
+	fp.skip_executable()
+
+	provider_str := fp.string('provider', `p`, 'github', 'git provider to use').to_lower()
+
+	additional_args := fp.finalize() ?
+
+	if additional_args.len > 0 {
+		println('Unprocessed arguments: ${additional_args.join(', ')}')
+	}
+
+	provider := match provider_str {
+		'github' {
+			Provider.github
+		}
+		'gitea' {
+			Provider.gitea
+		}
+		else {
+			eprintln('Invalid provider: $provider_str')
+			exit(1)
+		}
+	}
+
+	if !git.git_is_installed() {
+		eprintln('Git is not installed. Please install it from a package manager or https://git-scm.com/downloads')
 		exit(1)
 	}
 
-	username := os.getenv_opt('GITEA_USERNAME') or {
-		eprintln('Please set an environment variable GITEA_USERNAME with the value being your username.')
+	credentials := get_credentials_for(provider) ?
+
+	if !git.git_can_use_ssh(credentials.base_url) {
+		eprintln('Please setup an SSH Key pair and add the public key to your remote Git server.')
 		exit(1)
 	}
 
-	access_token := os.getenv_opt('GITEA_ACCESS_TOKEN') or {
-		eprintln('Please set an environment variable GITEA_ACCESS_TOKEN with the value being your access token.')
-		exit(1)
+	repositories := match provider {
+		.github {
+			github.get_repositories(credentials) ?
+		}
+		.gitea {
+			gitea.get_repositories(credentials) ?
+		}
 	}
 
-	repositories := gitea.get_repositories(
-		base_url: base_url
-		username: username
-		access_token: access_token
-	) or {
-		eprintln('Failed to get repositories.')
-		eprintln(err)
-		exit(1)
-	}
 	println(repositories.map(it.str()).join_lines())
 	println('Count: $repositories.len')
 }
