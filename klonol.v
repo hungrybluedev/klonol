@@ -16,6 +16,7 @@ fn main() {
 
 	provider_str := fp.string('provider', `p`, 'github', 'git provider to use').to_lower()
 	action_str := fp.string('action', `a`, 'list', 'action to perform').to_lower()
+	verbose := fp.bool('verbose', `v`, false, 'enable verbose output')
 
 	additional_args := fp.finalize() ?
 
@@ -79,7 +80,7 @@ fn main() {
 			println('Count: $repositories.len')
 		}
 		.clone {
-			git.clone_all_repositories(repositories) or {
+			git.clone_all_repositories(repositories, verbose) or {
 				eprintln('Failed to clone all repositories.')
 				exit(1)
 			}
