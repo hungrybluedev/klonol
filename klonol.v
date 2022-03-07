@@ -53,14 +53,14 @@ fn main() {
 		}
 	}
 
-	if !git.git_is_installed() {
+	if !git.is_installed() {
 		eprintln('Git is not installed. Please install it from a package manager or https://git-scm.com/downloads')
 		exit(1)
 	}
 
 	credentials := get_credentials_for(provider) ?
 
-	if !git.git_can_use_ssh(credentials.base_url) {
+	if !git.can_use_ssh(credentials.base_url) {
 		eprintln('Please setup an SSH Key pair and add the public key to your remote Git server.')
 		exit(1)
 	}
