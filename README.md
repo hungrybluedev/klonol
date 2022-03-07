@@ -1,4 +1,15 @@
-# klonol
+<div align="center">
+<h1><em>klonol</em></h1>
+
+[vlang.io](https://vlang.io) | [hungrybluedev](https://hungrybluedev.in/)
+
+</div>
+<div align="center">
+
+[![CI][workflowbadge]][workflowurl]
+[![License: MIT][licensebadge]][licenseurl]
+
+</div>
 
 A phonetic play on the phrase "clone all". It is a CLI tool written in
 [V](https://vlang.io/) to clone all repositories belonging to you (or the
@@ -202,3 +213,8 @@ klonol is already added to PATH.
 ## License
 
 This project is distributed under the [MIT License](LICENSE).
+
+[workflowbadge]: https://github.com/hungrybluedev/klonol/actions/workflows/ci.yml/badge.svg
+[licensebadge]: https://img.shields.io/badge/License-MIT-blue.svg
+[workflowurl]: https://github.com/hungrybluedev/klonol/actions/workflows/ci.yml
+[licenseurl]: https://github.com/hungrybluedev/klonol/blob/main/LICENSE
