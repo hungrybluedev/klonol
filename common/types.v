@@ -4,7 +4,7 @@ import x.json2
 
 pub struct Credentials {
 pub:
-	base_url     string = 'https://api.github.com/'
+	base_url     string = 'github.com'
 	username     string
 	access_token string = 'unset value'
 }
