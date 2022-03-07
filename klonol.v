@@ -79,7 +79,10 @@ fn main() {
 			println('Count: $repositories.len')
 		}
 		.clone {
-			println('TODO: Implement cloning repositories.')
+			git.clone_all_repositories(repositories) or {
+				eprintln('Failed to clone all repositories.')
+				exit(1)
+			}
 		}
 		.pull {
 			println('TODO: Implement updating cloned repositories.')
