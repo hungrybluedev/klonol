@@ -44,3 +44,10 @@ pub fn pull_repository(repository common.Repository, verbose bool) ? {
 	os.execute_or_panic('cd $repository.repo_name && git pull')
 	println(' Done.')
 }
+
+pub fn pull_existing_repositories(repositories []common.Repository, verbose bool) ? {
+	for repository in repositories {
+		pull_repository(repository, verbose) ?
+		time.sleep(common.sleep_duration)
+	}
+}

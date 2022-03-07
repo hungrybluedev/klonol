@@ -86,7 +86,10 @@ fn main() {
 			}
 		}
 		.pull {
-			println('TODO: Implement updating cloned repositories.')
+			git.pull_existing_repositories(repositories, verbose) or {
+				eprintln('Failed to pull existing repositories.')
+				exit(1)
+			}
 		}
 	}
 }
