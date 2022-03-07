@@ -7,7 +7,8 @@ authenticated user).
 ## Features
 
 1. Supports GitHub and [Gitea](https://gitea.io/en-us/).
-2. Retrieves information about both public _and_ private repositories belonging to the authenticated user.
+2. Retrieves information about both public _and_ private repositories belonging
+   to the authenticated user.
 3. You can list all available repositories, clone them, or run `git pull`
    on existing clones. It uses the user's SSH key to clone.
 
@@ -16,11 +17,13 @@ authenticated user).
 I self-host my Gitea instance. It contains several private repositories. There
 are some instances where I need to upgrade the server or perform some
 maintenance. Although I use [Docker Compose](https://docs.docker.com/compose/)
-with mounted volumes to manage the Gitea instance, there maybe times where
+with mounted volumes to manage the Gitea instance, there may be times where
 data retention is not possible. I need to restart my service from scratch. In
 order to help with these "from-scratch" scenarios, I wrote this tool.
 
-It allows me to automatically retrieve all of my repositories and clone them locally. I can stash away a password-protected local copy while I upgrade my git server in peace.
+It allows me to automatically retrieve all of my repositories and clone them
+locally. I can stash away a password-protected local copy while I upgrade my
+git server in peace.
 
 ## Prerequisites
 
@@ -32,7 +35,8 @@ It allows me to automatically retrieve all of my repositories and clone them loc
    to your appropriate account.
 4. Generate an [_personal access token_](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
    with the minimum scope of `repo` (to allow viewing private repositories)
-   and set an expiration of 7 days. Regenerate this key when it expires.
+   and set an expiration of 7 days or the lowest possible. Regenerate this
+   key when it expires.
 
 ## Installation
 
@@ -185,3 +189,16 @@ klonol -a clone -p gitea
 # Pull all changes from GitHub
 klonol -a pull -p gitea
 ```
+
+### Updating klonol
+
+If you've installed it from source, navigate to the folder where you cloned
+the repository. Then run `git pull`. After all the changes have been
+downloaded, run `v build.vsh`.
+
+You don't need to change the PATH variable if
+klonol is already added to PATH.
+
+## License
+
+This project is distributed under the [MIT License](LICENSE).
