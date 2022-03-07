@@ -15,6 +15,7 @@ fn main() {
 	fp.skip_executable()
 
 	provider_str := fp.string('provider', `p`, 'github', 'git provider to use').to_lower()
+	action_str := fp.string('action', `a`, 'list', 'action to perform').to_lower()
 
 	additional_args := fp.finalize() ?
 
@@ -31,6 +32,22 @@ fn main() {
 		}
 		else {
 			eprintln('Invalid provider: $provider_str')
+			exit(1)
+		}
+	}
+
+	action := match action_str {
+		'list' {
+			Action.list
+		}
+		'clone' {
+			Action.clone
+		}
+		'pull' {
+			Action.pull
+		}
+		else {
+			eprintln('Invalid action: $action_str')
 			exit(1)
 		}
 	}
@@ -56,6 +73,16 @@ fn main() {
 		}
 	}
 
-	println(repositories.map(it.str()).join_lines())
-	println('Count: $repositories.len')
+	match action {
+		.list {
+			println(repositories.map(it.str()).join_lines())
+			println('Count: $repositories.len')
+		}
+		.clone {
+			println('TODO: Implement cloning repositories.')
+		}
+		.pull {
+			println('TODO: Implement updating cloned repositories.')
+		}
+	}
 }

@@ -5,9 +5,9 @@ import v.vmod
 const manifest = vmod.from_file('v.mod') or { panic(err) }
 
 pub const (
-	version     = manifest.version
-	name        = manifest.name
-	description = manifest.description
+	version      = manifest.version
+	name         = manifest.name
+	description  = manifest.description
 	instructions = '
 klonol requires Access Tokens to work properly. Refer to README for more
 information. It retrieves information about ALL available repositories
