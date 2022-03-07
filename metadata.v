@@ -2,7 +2,8 @@ module main
 
 import v.vmod
 
-const manifest = vmod.from_file('v.mod') or { panic(err) }
+const embedded_vmod = $embed_file('v.mod')
+const manifest = vmod.decode(embedded_vmod.to_string()) or { panic(err) }
 
 pub const (
 	version      = manifest.version
