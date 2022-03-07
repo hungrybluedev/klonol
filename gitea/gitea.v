@@ -7,7 +7,7 @@ import time
 
 fn get_data_for_page_number(page int, credentials common.Credentials) ?[]common.Repository {
 	mut request := http.Request{
-		url: '$credentials.base_url/api/v1/users/$credentials.username/repos?page=$page&limit=100&access_token=$credentials.access_token'
+		url: 'https://$credentials.base_url/api/v1/users/$credentials.username/repos?page=$page&limit=100&access_token=$credentials.access_token'
 		method: .get
 	}
 	result := request.do() ?
