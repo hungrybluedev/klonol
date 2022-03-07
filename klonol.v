@@ -18,10 +18,16 @@ fn main() {
 	action_str := fp.string('action', `a`, 'list', 'action to perform').to_lower()
 	verbose := fp.bool('verbose', `v`, false, 'enable verbose output')
 
-	additional_args := fp.finalize() ?
+	additional_args := fp.finalize() or {
+		eprintln(err)
+        eprintln(fp.usage())
+        exit(1)
+	}
 
 	if additional_args.len > 0 {
-		println('Unprocessed arguments: ${additional_args.join(', ')}')
+		eprintln('Unnecessary arguments: ${additional_args.join(', ')}')
+		eprintln(fp.usage())
+		exit(1)
 	}
 
 	provider := match provider_str {
