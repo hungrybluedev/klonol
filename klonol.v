@@ -20,8 +20,8 @@ fn main() {
 
 	additional_args := fp.finalize() or {
 		eprintln(err)
-        eprintln(fp.usage())
-        exit(1)
+		eprintln(fp.usage())
+		exit(1)
 	}
 
 	if additional_args.len > 0 {
