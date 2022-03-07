@@ -1,7 +1,7 @@
 Module {
 	name: 'klonol'
 	description: 'A CLI tool to "clone all" repositories belonging to you.'
-	version: '0.1.3'
+	version: '0.2.0'
 	license: 'MIT'
 	dependencies: []
 }
