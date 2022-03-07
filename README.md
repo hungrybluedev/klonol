@@ -55,7 +55,9 @@ git server in peace.
 
 **Step 1:** Install
 [V](https://github.com/vlang/v/blob/master/doc/docs.md#install-from-source)
-and symlink it.
+and [symlink it](https://github.com/vlang/v#symlinking).
+
+If you already have V installed, update your installation by doing `v up`.
 
 **Step 2:** Clone and compile _klonol_
 
