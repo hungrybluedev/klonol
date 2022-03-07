@@ -1,5 +1,5 @@
 println('Removing old artifacts...')
-rmdir_all('bin') ?
+rmdir_all('bin') or {}
 println('Done removing "bin" directory.')
 
 println('\nCreating new output directory "bin"...')
