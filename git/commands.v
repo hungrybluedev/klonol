@@ -46,7 +46,7 @@ pub fn pull_repository(repository common.Repository, verbose bool) ? {
 	result := os.execute_or_panic('cd $repository.repo_name && git remote update && git status')
 	if result.output.contains('Your branch is up to date with ') {
 		if verbose {
-			println('No pull is needed for repository: $repository.repo_name.')
+			println('No pull is needed for repository: ${repository.repo_name}.')
 		}
 		return
 	}
