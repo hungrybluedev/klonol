@@ -30,3 +30,10 @@ jobs:
       - name: Build ${{ github.event.repository.name }}
         run: |
           v build.vsh
+      
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: klonol-${{ matrix.os }}
+          path: bin
+          retention-days: 35
