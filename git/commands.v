@@ -40,9 +40,23 @@ pub fn pull_repository(repository common.Repository, verbose bool) ? {
 		}
 		return
 	}
-	print('Pulling repository: $repository.repo_name ...')
+	if verbose {
+		print('Check if pull is needed for repository: $repository.repo_name ...')
+	}
+	result := os.execute_or_panic('cd $repository.repo_name && git remote update && git status')
+	if result.output.contains('Your branch is up to date with ') {
+		if verbose {
+			println('No pull is needed for repository: $repository.repo_name.')
+		}
+		return
+	}
+	if verbose {
+		print('Pulling repository: $repository.repo_name ...')
+	}
 	os.execute_or_panic('cd $repository.repo_name && git pull')
-	println(' Done.')
+	if verbose {
+		println(' Done.')
+	}
 }
 
 pub fn pull_existing_repositories(repositories []common.Repository, verbose bool) ? {
