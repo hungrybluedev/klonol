@@ -8,6 +8,7 @@
 
 [![CI][workflowbadge]][workflowurl]
 [![License: MIT][licensebadge]][licenseurl]
+[![Git Latest Tag][gittagbadge]][gittagurl]
 
 </div>
 
@@ -220,3 +221,5 @@ This project is distributed under the [MIT License](LICENSE).
 [licensebadge]: https://img.shields.io/badge/License-MIT-blue.svg
 [workflowurl]: https://github.com/hungrybluedev/klonol/actions/workflows/ci.yml
 [licenseurl]: https://github.com/hungrybluedev/klonol/blob/main/LICENSE
+[gittagurl]: https://github.com/hungrybluedev/klonol/tags
+[gittagbadge]: https://img.shields.io/github/v/tag/hungrybluedev/klonol?color=purple&include_prereleases&sort=semver
