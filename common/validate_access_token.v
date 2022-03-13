@@ -7,7 +7,9 @@ pub fn is_access_token_valid(access_token string, endpoint_url string) bool {
 		url: endpoint_url
 		method: .get
 	}
-	request.add_header(.authorization, 'token $access_token')
+	if access_token != 'unset_value' {
+		request.add_header(.authorization, 'token $access_token')
+	}
 	result := request.do() or { return false }
 	return result.status_code == 200
 }

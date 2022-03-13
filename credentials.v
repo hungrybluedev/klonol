@@ -3,6 +3,13 @@ module main
 import common
 import os
 
+fn display_unprotected_access_token_warning() {
+	println('\nIMPORTANT: Make sure to clear your terminal history to avoid leaking this
+access token. Otherwise, regenerate this token as soon as possible. Also,
+consider storing the credentials in a .env file instead. Refer to the
+README.md for more instructions.\n')
+}
+
 fn get_credentials_for(provider Provider) ?common.Credentials {
 	return match provider {
 		.gitea {
@@ -37,14 +44,10 @@ fn get_github_credentials() ?common.Credentials {
 			eprintln('Please enter your access token.')
 			exit(1)
 		}
-		println('\nIMPORTANT: Make sure to clear your terminal history to avoid leaking this
-access token. Otherwise, regenerate this token as soon as possible. Also,
-consider storing the credentials in a .env file instead. Refer to the
-README.md for more instructions.\n')
+		display_unprotected_access_token_warning()
 		access_token
 	}
 
-	// Test the Access Token by making a request to the API.
 	token_is_valid := common.is_access_token_valid(access_token, 'https://api.github.com/user/issues')
 
 	if !token_is_valid {
@@ -61,8 +64,12 @@ README.md for more instructions.\n')
 
 fn get_gitea_credentials() ?common.Credentials {
 	base_url := os.getenv_opt('GITEA_BASE_URL') or {
-		eprintln('Please set an environment variable GITEA_BASE_URL with the value being the base URL of your Gitea instance. For example: "git.example.com".')
-		exit(1)
+		eprintln('GITEA_BASE_URL environment variable is not set.')
+		base_url := os.input_opt('Please the base URL (without protocol): ') or {
+			eprintln('Please enter your base URL.')
+			exit(1)
+		}
+		base_url
 	}
 
 	if base_url.contains('http') {
@@ -71,12 +78,28 @@ fn get_gitea_credentials() ?common.Credentials {
 	}
 
 	username := os.getenv_opt('GITEA_USERNAME') or {
-		eprintln('Please set an environment variable GITEA_USERNAME with the value being your username.')
-		exit(1)
+		eprintln('GITEA_USERNAME environment variable is not set.')
+		username := os.input_opt('Please enter username: ') or {
+			eprintln('Please enter your username.')
+			exit(1)
+		}
+		username
 	}
 
 	access_token := os.getenv_opt('GITEA_ACCESS_TOKEN') or {
-		eprintln('Please set an environment variable GITEA_ACCESS_TOKEN with the value being your access token.')
+		eprintln('GITEA_ACCESS_TOKEN environment variable is not set.')
+		access_token := os.input_opt('Please enter access token: ') or {
+			eprintln('Please enter your access token.')
+			exit(1)
+		}
+		display_unprotected_access_token_warning()
+		access_token
+	}
+
+	token_is_valid := common.is_access_token_valid('unset_value', 'https://$base_url/api/v1/user?access_token=$access_token')
+
+	if !token_is_valid {
+		eprintln('The access token is invalid.')
 		exit(1)
 	}
 
