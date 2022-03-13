@@ -23,12 +23,32 @@ fn get_github_credentials() ?common.Credentials {
 	}
 
 	username := os.getenv_opt('GITHUB_USERNAME') or {
-		eprintln('Please set an environment variable GITHUB_USERNAME with the value being your username.')
-		exit(1)
+		eprintln('GITHUB_USERNAME environment variable is not set.')
+		username := os.input_opt('Please enter username: ') or {
+			eprintln('Please enter your username.')
+			exit(1)
+		}
+		username
 	}
 
 	access_token := os.getenv_opt('GITHUB_ACCESS_TOKEN') or {
-		eprintln('Please set an environment variable GITHUB_ACCESS_TOKEN with the value being your access token.')
+		eprintln('GITHUB_ACCESS_TOKEN environment variable is not set.')
+		access_token := os.input_opt('Please enter access token: ') or {
+			eprintln('Please enter your access token.')
+			exit(1)
+		}
+		println('\nIMPORTANT: Make sure to clear your terminal history to avoid leaking this
+access token. Otherwise, regenerate this token as soon as possible. Also,
+consider storing the credentials in a .env file instead. Refer to the
+README.md for more instructions.\n')
+		access_token
+	}
+
+	// Test the Access Token by making a request to the API.
+	token_is_valid := common.is_access_token_valid(access_token, 'https://api.github.com/user/issues')
+
+	if !token_is_valid {
+		eprintln('The access token is invalid.')
 		exit(1)
 	}
 
