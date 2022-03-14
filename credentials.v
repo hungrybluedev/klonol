@@ -40,11 +40,11 @@ fn get_github_credentials() ?common.Credentials {
 
 	access_token := os.getenv_opt('GITHUB_ACCESS_TOKEN') or {
 		eprintln('GITHUB_ACCESS_TOKEN environment variable is not set.')
+		display_unprotected_access_token_warning()
 		access_token := os.input_opt('Please enter access token: ') or {
 			eprintln('Please enter your access token.')
 			exit(1)
 		}
-		display_unprotected_access_token_warning()
 		access_token
 	}
 
@@ -88,11 +88,11 @@ fn get_gitea_credentials() ?common.Credentials {
 
 	access_token := os.getenv_opt('GITEA_ACCESS_TOKEN') or {
 		eprintln('GITEA_ACCESS_TOKEN environment variable is not set.')
+		display_unprotected_access_token_warning()
 		access_token := os.input_opt('Please enter access token: ') or {
 			eprintln('Please enter your access token.')
 			exit(1)
 		}
-		display_unprotected_access_token_warning()
 		access_token
 	}
 
