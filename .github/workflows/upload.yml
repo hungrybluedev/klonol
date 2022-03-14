@@ -1,0 +1,38 @@
+name: Upload artifacts
+
+on:
+  push:
+    tags:
+      - "v*" # matches v1.0.1, v1.2, v2, etc
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: ["ubuntu", "macos", "windows"]
+    runs-on: ${{ matrix.os }}-latest
+
+    steps:
+      - name: Install V
+        uses: vlang/setup-v@v1
+        with:
+          check-latest: true
+
+      - name: Checkout ${{ github.event.repository.name }}
+        uses: actions/checkout@v2
+
+      - name: Check if code is formatted
+        run: |
+          v fmt -diff .
+          v fmt -verify .
+
+      - name: Build ${{ github.event.repository.name }}
+        run: |
+          v build.vsh
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: klonol-${{ matrix.os }}
+          path: bin
+          retention-days: 15
