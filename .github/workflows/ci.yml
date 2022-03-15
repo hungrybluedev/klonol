@@ -28,5 +28,4 @@ jobs:
           v fmt -verify .
 
       - name: Build ${{ github.event.repository.name }}
-        run: |
-          v build.vsh
+        run: v .
