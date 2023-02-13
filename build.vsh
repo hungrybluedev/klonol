@@ -3,7 +3,7 @@ rmdir_all('bin') or {}
 println('Done removing "bin" directory.')
 
 println('\nCreating new output directory "bin"...')
-mkdir('bin') ?
+mkdir('bin')!
 println('Done creating "bin" directory.')
 
 println('\nChecking if everything is formatted correctly...')
