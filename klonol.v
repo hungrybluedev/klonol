@@ -11,7 +11,7 @@ fn main() {
 
 	fp.application(name)
 	fp.version(version)
-	fp.description('$description\n$instructions')
+	fp.description('${description}\n${instructions}')
 	fp.skip_executable()
 
 	provider_str := fp.string('provider', `p`, 'github', 'git provider to use').to_lower()
@@ -38,7 +38,7 @@ fn main() {
 			Provider.gitea
 		}
 		else {
-			eprintln('Invalid provider: $provider_str')
+			eprintln('Invalid provider: ${provider_str}')
 			exit(1)
 		}
 	}
@@ -54,7 +54,7 @@ fn main() {
 			Action.pull
 		}
 		else {
-			eprintln('Invalid action: $action_str')
+			eprintln('Invalid action: ${action_str}')
 			exit(1)
 		}
 	}
@@ -64,7 +64,7 @@ fn main() {
 		exit(1)
 	}
 
-	credentials := get_credentials_for(provider) ?
+	credentials := get_credentials_for(provider)!
 
 	if !git.can_use_ssh(credentials.base_url) {
 		eprintln('Please setup an SSH Key pair and add the public key to your remote Git server.')
@@ -73,17 +73,17 @@ fn main() {
 
 	repositories := match provider {
 		.github {
-			github.get_repositories(credentials) ?
+			github.get_repositories(credentials)!
 		}
 		.gitea {
-			gitea.get_repositories(credentials) ?
+			gitea.get_repositories(credentials)!
 		}
 	}
 
 	match action {
 		.list {
 			println(repositories.map(it.str()).join_lines())
-			println('Count: $repositories.len')
+			println('Count: ${repositories.len}')
 		}
 		.clone {
 			git.clone_all_repositories(repositories, verbose) or {

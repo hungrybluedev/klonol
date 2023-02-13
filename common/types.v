@@ -16,12 +16,12 @@ pub:
 }
 
 pub fn (repo Repository) str() string {
-	return 'Name: $repo.repo_name, URL: $repo.ssh_url'
+	return 'Name: ${repo.repo_name}, URL: ${repo.ssh_url}'
 }
 
-pub fn parse_repository(map_data map[string]json2.Any) ?Repository {
+pub fn parse_repository(map_data map[string]json2.Any) !Repository {
 	return Repository{
-		repo_name: map_data['name'] ?.str()
-		ssh_url: map_data['ssh_url'] ?.str()
+		repo_name: map_data['name']!.str()
+		ssh_url: map_data['ssh_url']!.str()
 	}
 }
