@@ -2,6 +2,7 @@
 main
 bin
 klonol
+build
 *.exe
 *.exe~
 *.so
@@ -11,3 +12,4 @@ vls.log
 
 # Enviroment files
 *.env
+
