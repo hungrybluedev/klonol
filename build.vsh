@@ -7,9 +7,9 @@ mkdir('bin')!
 println('Done creating "bin" directory.')
 
 println('\nChecking if everything is formatted correctly...')
-execute_or_panic('v fmt -verify .')
+execute_or_panic('${@VEXE} fmt -verify .')
 println('Done checking formatting.')
 
 println('\nCompiling and building executable...')
-execute_or_panic('v -prod . -o bin/klonol')
+execute_or_panic('${@VEXE} -prod . -o bin/klonol')
 println('Done compiling and placing executable in "bin".')
