@@ -5,8 +5,8 @@ import x.json2
 pub struct Credentials {
 pub:
 	base_url     string = 'github.com'
-	username     string = 'unset value'
-	access_token string = 'unset value'
+	username     string = 'unset_value'
+	access_token string = 'unset_value'
 }
 
 pub fn (c Credentials) to_toml() string {
