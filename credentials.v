@@ -1,7 +1,36 @@
 module main
 
 import common
+import toml
 import os
+
+
+fn create_default_config(path string) ?common.Credentials {
+	if os.exists(path) && os.file_size(path) != 0 { return none }
+
+	creds := common.Credentials{}
+	os.write_file(path, toml.encode(creds)) or { return error('Cannot write default config to "${path}"') }
+	return creds
+}
+
+fn load_config(path string) ?common.Credentials {
+	if !os.exists(path) {
+		return create_default_config(path) or {
+		eprintln(err)
+		exit(1)}
+	}
+
+	creds := toml.parse_file(path) or {
+		eprintln('Error parsing config at "${path}". Using default config"')
+		exit(1)
+	}
+
+	return common.Credentials {
+		base_url: creds.value('BASE_URL').string(),
+		username: creds.value('USERNAME').string(),
+		access_token: creds.value('ACCESS_TOKEN').string()
+	}
+}
 
 fn display_unprotected_access_token_warning() {
 	println('\nIMPORTANT: Make sure to clear your terminal history to avoid leaking this
@@ -10,85 +39,37 @@ consider storing the credentials in a .env file instead. Refer to the
 README.md for more instructions.\n')
 }
 
-fn get_credentials_for(provider Provider) !common.Credentials {
-	return match provider {
-		.gitea {
-			get_gitea_credentials()!
-		}
-		.github {
-			get_github_credentials()!
-		}
-	}
-}
-
-fn get_github_credentials() !common.Credentials {
-	base_url := os.getenv_opt('GITHUB_BASE_URL') or { 'github.com' }
+fn get_credentials_for(provider Provider, path string) !common.Credentials {
+	credentials := load_config(path) or { eprintln(err) exit(1) }
+	base_url := credentials.base_url
 
 	if base_url.contains('http') {
-		return error('Do not include the protocol in the GITHUB_BASE_URL environment variable. Valid example: "git.example.com".')
+		return error('Do not include the protocol in the BASE_URL environment variable. Valid example: "git.example.com".')
 	}
 
-	username := os.getenv_opt('GITHUB_USERNAME') or {
-		eprintln('GITHUB_USERNAME environment variable is not set.')
-		username := os.input_opt('Please enter username: ') or {
+	mut username := credentials.username
+	if username == 'unset_value' {
+		eprintln('USERNAME variable is not set in ${path}.')
+		username = os.input_opt('Please enter username: ') or {
 			return error('Please enter your username.')
 		}
 		username
 	}
 
-	access_token := os.getenv_opt('GITHUB_ACCESS_TOKEN') or {
-		eprintln('GITHUB_ACCESS_TOKEN environment variable is not set.')
+	mut access_token := credentials.access_token
+	if access_token == 'unset_value' {
+		eprintln('ACCESS_TOKEN variable is not set ${path}.')
 		display_unprotected_access_token_warning()
-		access_token := os.input_opt('Please enter access token: ') or {
+		access_token = os.input_opt('Please enter access token: ') or {
 			return error('Please enter your access token.')
 		}
 		access_token
 	}
 
-	token_is_valid := common.is_access_token_valid(access_token, 'https://api.github.com/user/issues')
-
-	if !token_is_valid {
-		return error('The access token is invalid.')
+	token_is_valid := match provider {
+		.github { common.is_access_token_valid(access_token, 'https://api.github.com/user/issues') }
+		.gitea  { common.is_access_token_valid(access_token, 'https://${base_url}/api/v1/user?access_token=${access_token}') }
 	}
-
-	return common.Credentials{
-		base_url: base_url
-		username: username
-		access_token: access_token
-	}
-}
-
-fn get_gitea_credentials() !common.Credentials {
-	base_url := os.getenv_opt('GITEA_BASE_URL') or {
-		eprintln('GITEA_BASE_URL environment variable is not set.')
-		base_url := os.input_opt('Please the base URL (without protocol): ') or {
-			return error('Please enter your base URL.')
-		}
-		base_url
-	}
-
-	if base_url.contains('http') {
-		return error('Do not include the protocol in the GITEA_BASE_URL environment variable. Valid example: "git.example.com".')
-	}
-
-	username := os.getenv_opt('GITEA_USERNAME') or {
-		eprintln('GITEA_USERNAME environment variable is not set.')
-		username := os.input_opt('Please enter username: ') or {
-			return error('Please enter your username.')
-		}
-		username
-	}
-
-	access_token := os.getenv_opt('GITEA_ACCESS_TOKEN') or {
-		eprintln('GITEA_ACCESS_TOKEN environment variable is not set.')
-		display_unprotected_access_token_warning()
-		access_token := os.input_opt('Please enter access token: ') or {
-			return error('Please enter your access token.')
-		}
-		access_token
-	}
-
-	token_is_valid := common.is_access_token_valid('unset_value', 'https://${base_url}/api/v1/user?access_token=${access_token}')
 
 	if !token_is_valid {
 		return error('The access token is invalid.')
