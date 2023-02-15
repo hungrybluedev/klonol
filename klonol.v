@@ -14,8 +14,9 @@ fn main() {
 	fp.description('${description}\n${instructions}')
 	fp.skip_executable()
 
-	provider_str := fp.string('provider', `p`, 'github', 'git provider to use').to_lower()
-	action_str := fp.string('action', `a`, 'list', 'action to perform').to_lower()
+	provider_str := fp.string('provider', `p`, 'github', 'git provider to use (default is github)').to_lower()
+	credentials_path := fp.string('credentials', `c`, 'credentials.toml', 'path to credentials.toml file (default is ./credentials.toml)').to_lower()
+	action_str := fp.string('action', `a`, 'list', 'action to perform [list, clone, pull] ').to_lower()
 	verbose := fp.bool('verbose', `v`, false, 'enable verbose output')
 
 	additional_args := fp.finalize() or {
@@ -29,6 +30,7 @@ fn main() {
 		eprintln(fp.usage())
 		exit(1)
 	}
+
 
 	provider := match provider_str {
 		'github' {
@@ -64,7 +66,7 @@ fn main() {
 		exit(1)
 	}
 
-	credentials := get_credentials_for(provider)!
+	credentials := get_credentials_for(provider, credentials_path)!
 
 	if !git.can_use_ssh(credentials.base_url) {
 		eprintln('Please setup an SSH Key pair and add the public key to your remote Git server.')
