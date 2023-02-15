@@ -30,7 +30,7 @@ fn load_config(path string) ?common.Credentials {
 	}
 
 	return common.Credentials{
-		base_url: creds.value('BASE_URL').string()
+		base_url: (creds.value_opt('BASE_URL') or { 'github.com' }).string()
 		username: creds.value('USERNAME').string()
 		access_token: creds.value('ACCESS_TOKEN').string()
 	}
