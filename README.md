@@ -93,34 +93,15 @@ klonol -h
 
 ## Usage
 
-### Setting the environment variables
+### Setting the variables
 
-For GitHub the following variables need to be set.
-
+The following variables need to be set in a file called `credentials.toml`.
 | Name                | Description                                                                              | Compulsory |
 | ------------------- | ---------------------------------------------------------------------------------------- | ---------- |
-| GITHUB_USERNAME     | The username whose repositories are to be queried                                        | Yes        |
-| GITHUB_ACCESS_TOKEN | The personal access token generated previously                                           | Yes        |
-| GITHUB_BASE_URL     | The base domain to be used to test SSH and make API calls from. Defaults to `github.com` | No         |
+| USERNAME            | The github or gittea username whose repositories are to be queried                       | Yes        |
+| ACCESS_TOKEN        | The personal access token generated previously                                           | Yes        |
+| BASE_URL            | The base domain to be used to test SSH and make API calls from. Defaults to `github.com` | No         |
 
-For Gitea the following need to be set:
-
-| Name               | Description                                                                                  | Compulsory |
-| ------------------ | -------------------------------------------------------------------------------------------- | ---------- |
-| GITEA_USERNAME     | The username whose repositories are to be queried                                            | Yes        |
-| GITEA_ACCESS_TOKEN | The personal access token generated previously                                               | Yes        |
-| GITEA_BASE_URL     | The domain where the Gitea instance is hosted. Do not include the protocol (e.g. `https://`) | Yes        |
-
-For Unix-like systems, copy the `.env.sample` file, fill in the appropriate
-values, comment out the ones you don't need. Then run the following to add
-the required variables to your session:
-
-```bash
-source .env
-```
-
-For Windows, you need to set the environment variables manually (for now).
-If you want to make it analogous to the Unix way, please contribute a solution.
 
 ### Running klonol
 
@@ -156,11 +137,12 @@ klonol --help
 
 
 # Options:
-#   -p, --provider <string>   git provider to use
-#   -a, --action <string>     action to perform
-#   -v, --verbose             enable verbose output
-#   -h, --help                display this help and exit
-#   --version                 output version information and exit
+#   -p, --provider <string>    git provider to use
+#   -c, --credentials <string> path to credentials.toml file (default is ./credentials.toml)
+#   -a, --action <string>      action to perform
+#   -v, --verbose              enable verbose output
+#   -h, --help                 display this help and exit
+#   --version                  output version information and exit
 
 ```
 
