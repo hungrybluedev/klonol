@@ -4,20 +4,24 @@ import common
 import toml
 import os
 
-
 fn create_default_config(path string) ?common.Credentials {
-	if os.exists(path) && os.file_size(path) != 0 { return none }
+	if os.exists(path) && os.file_size(path) != 0 {
+		return none
+	}
 
 	creds := common.Credentials{}
-	os.write_file(path, toml.encode(creds)) or { return error('Cannot write default config to "${path}"') }
+	os.write_file(path, toml.encode(creds)) or {
+		return error('Cannot write default config to "${path}"')
+	}
 	return creds
 }
 
 fn load_config(path string) ?common.Credentials {
 	if !os.exists(path) {
 		return create_default_config(path) or {
-		eprintln(err)
-		exit(1)}
+			eprintln(err)
+			exit(1)
+		}
 	}
 
 	creds := toml.parse_file(path) or {
@@ -25,9 +29,9 @@ fn load_config(path string) ?common.Credentials {
 		exit(1)
 	}
 
-	return common.Credentials {
-		base_url: creds.value('BASE_URL').string(),
-		username: creds.value('USERNAME').string(),
+	return common.Credentials{
+		base_url: creds.value('BASE_URL').string()
+		username: creds.value('USERNAME').string()
 		access_token: creds.value('ACCESS_TOKEN').string()
 	}
 }
@@ -40,7 +44,10 @@ README.md for more instructions.\n')
 }
 
 fn get_credentials_for(provider Provider, path string) !common.Credentials {
-	credentials := load_config(path) or { eprintln(err) exit(1) }
+	credentials := load_config(path) or {
+		eprintln(err)
+		exit(1)
+	}
 	base_url := credentials.base_url
 
 	if base_url.contains('http') {
@@ -68,7 +75,7 @@ fn get_credentials_for(provider Provider, path string) !common.Credentials {
 
 	token_is_valid := match provider {
 		.github { common.is_access_token_valid(access_token, 'https://api.github.com/user/issues') }
-		.gitea  { common.is_access_token_valid(access_token, 'https://${base_url}/api/v1/user?access_token=${access_token}') }
+		.gitea { common.is_access_token_valid(access_token, 'https://${base_url}/api/v1/user?access_token=${access_token}') }
 	}
 
 	if !token_is_valid {

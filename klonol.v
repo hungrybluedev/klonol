@@ -31,7 +31,6 @@ fn main() {
 		exit(1)
 	}
 
-
 	provider := match provider_str {
 		'github' {
 			Provider.github
