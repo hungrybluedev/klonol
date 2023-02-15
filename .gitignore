@@ -12,4 +12,4 @@ vls.log
 
 # Enviroment files
 *.env
-
+*.toml
