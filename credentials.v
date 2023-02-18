@@ -16,8 +16,8 @@ fn create_default_config(path string) ?common.Credentials {
 	return creds
 }
 
-fn get_value_or_set_default(creds toml.Doc, value string, default string) string {
-	retrieved_value := (creds.value_opt(value) or { default }).string()
+fn get_value_or_set_default(creds toml.Doc, key string, default string) string {
+	retrieved_value := (creds.value_opt(key) or { default }).string()
 	if retrieved_value == '' {
 		return default
 	}
