@@ -96,6 +96,9 @@ klonol -h
 ### Setting the variables
 
 The following variables need to be set in a file called `credentials.toml`.
+both github and gittea will use these same variables, so if you want to have github
+and gittea credentials saved in the same file at the same time, simply comment out
+the ones you don't want to use.
 | Name                | Description                                                                              | Compulsory |
 | ------------------- | ---------------------------------------------------------------------------------------- | ---------- |
 | USERNAME            | The github or gittea username whose repositories are to be queried                       | Yes        |
