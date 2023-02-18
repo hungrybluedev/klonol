@@ -16,6 +16,14 @@ fn create_default_config(path string) ?common.Credentials {
 	return creds
 }
 
+fn get_value_or_set_default(creds toml.Doc, value string, default string) string {
+	retrieved_value := (creds.value_opt(value) or { default }).string()
+	if retrieved_value == '' {
+		return default
+	}
+	return retrieved_value
+}
+
 fn load_config(path string) ?common.Credentials {
 	if !os.exists(path) {
 		return create_default_config(path) or {
@@ -30,16 +38,16 @@ fn load_config(path string) ?common.Credentials {
 	}
 
 	return common.Credentials{
-		base_url: (creds.value_opt('BASE_URL') or { 'github.com' }).string()
-		username: creds.value('USERNAME').string()
-		access_token: creds.value('ACCESS_TOKEN').string()
+		base_url: get_value_or_set_default(creds, 'BASE_URL', 'github.com')
+		username: get_value_or_set_default(creds, 'USERNAME', 'unset_value')
+		access_token: get_value_or_set_default(creds, 'ACCESS_TOKEN', 'unset_value')
 	}
 }
 
 fn display_unprotected_access_token_warning() {
 	println('\nIMPORTANT: Make sure to clear your terminal history to avoid leaking this
 access token. Otherwise, regenerate this token as soon as possible. Also,
-consider storing the credentials in a .env file instead. Refer to the
+consider storing the credentials in a .toml file instead. Refer to the
 README.md for more instructions.\n')
 }
 
