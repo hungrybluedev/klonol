@@ -4,43 +4,47 @@ import common
 import toml
 import os
 
-fn create_default_config(path string) ?common.Credentials {
+fn create_default_config(provider common.Provider, path string) !common.Credential {
 	if os.exists(path) && os.file_size(path) != 0 {
-		return none
+		return error('Credential file already exists.')
 	}
 
-	creds := common.Credentials{}
-	os.write_file(path, toml.encode(creds)) or {
+	credential := common.Credential{
+		provider: provider
+		username: 'unset_value'
+		access_token: 'unset_value'
+	}
+	file := common.CredentialFile{
+		credentials: [credential]
+	}
+	os.write_file(path, file.to_toml()) or {
 		return error('Cannot write default config to "${path}"')
 	}
-	return creds
+	return credential
 }
 
-fn get_value_or_set_default(creds toml.Doc, key string, default string) string {
-	retrieved_value := (creds.value_opt(key) or { default }).string()
-	if retrieved_value == '' {
-		return default
-	}
-	return retrieved_value
-}
-
-fn load_config(path string) ?common.Credentials {
+fn load_config(provider common.Provider, path string) !common.Credential {
 	if !os.exists(path) {
-		return create_default_config(path) or {
-			eprintln(err)
-			exit(1)
-		}
+		return create_default_config(provider, path)!
 	}
 
-	creds := toml.parse_file(path) or {
-		eprintln('Error parsing config at "${path}". Using default config"')
-		exit(1)
+	cred_file := toml.parse_file(path) or {
+		return error('Error parsing config at "${path}". Using default config"')
 	}
 
-	return common.Credentials{
-		base_url: get_value_or_set_default(creds, 'BASE_URL', 'github.com')
-		username: get_value_or_set_default(creds, 'USERNAME', 'unset_value')
-		access_token: get_value_or_set_default(creds, 'ACCESS_TOKEN', 'unset_value')
+	credential := cred_file.value_opt(provider.str()) or {
+		return error('Could not read the credentials for ${provider}')
+	}
+
+	return common.Credential{
+		provider: provider
+		base_url: (credential.value_opt('base_url') or { toml.Any('github.com') }).string()
+		username: (credential.value_opt('username') or {
+			return error('username not provided for ${provider}')
+		}).string()
+		access_token: (credential.value_opt('access_token') or {
+			return error('access_token not provided ')
+		}).string()
 	}
 }
 
@@ -51,20 +55,17 @@ consider storing the credentials in a .toml file instead. Refer to the
 README.md for more instructions.\n')
 }
 
-fn get_credentials_for(provider Provider, path string) !common.Credentials {
-	credentials := load_config(path) or {
-		eprintln(err)
-		exit(1)
-	}
+fn get_credentials_for(provider common.Provider, path string) !common.Credential {
+	credentials := load_config(provider, path)!
 	base_url := credentials.base_url
 
-	if base_url.contains('http') {
-		return error('Do not include the protocol in the BASE_URL environment variable. Valid example: "git.example.com".')
+	if base_url.contains('http') || base_url.contains('://') {
+		return error('Do not include the protocol in the base_url variable. Valid example: "git.example.com".')
 	}
 
 	mut username := credentials.username
 	if username == 'unset_value' {
-		eprintln('USERNAME variable is not set in ${path}.')
+		eprintln('username variable is not set in ${path}.')
 		username = os.input_opt('Please enter username: ') or {
 			return error('Please enter your username.')
 		}
@@ -73,7 +74,7 @@ fn get_credentials_for(provider Provider, path string) !common.Credentials {
 
 	mut access_token := credentials.access_token
 	if access_token == 'unset_value' {
-		eprintln('ACCESS_TOKEN variable is not set ${path}.')
+		eprintln('access_token variable is not set ${path}.')
 		display_unprotected_access_token_warning()
 		access_token = os.input_opt('Please enter access token: ') or {
 			return error('Please enter your access token.')
@@ -90,7 +91,8 @@ fn get_credentials_for(provider Provider, path string) !common.Credentials {
 		return error('The access token is invalid.')
 	}
 
-	return common.Credentials{
+	return common.Credential{
+		provider: provider
 		base_url: base_url
 		username: username
 		access_token: access_token
