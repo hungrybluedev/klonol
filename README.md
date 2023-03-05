@@ -137,7 +137,7 @@ information automatically.
 # Get the version
 klonol --version
 # output:
-# klonol 0.5.x
+# klonol 0.6.x
 
 
 # Get detailed usage information
@@ -145,7 +145,7 @@ klonol -h
 # OR
 klonol --help
 # output:
-# klonol 0.5.x
+# klonol 0.6.x
 # -----------------------------------------------
 # Usage: klonol [options] [ARGS]
 #
