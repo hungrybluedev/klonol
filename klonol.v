@@ -1,9 +1,10 @@
 module main
 
-import flag
+import common
 import git
 import gitea
 import github
+import flag
 import os
 
 fn main() {
@@ -33,10 +34,10 @@ fn main() {
 
 	provider := match provider_str {
 		'github' {
-			Provider.github
+			common.Provider.github
 		}
 		'gitea' {
-			Provider.gitea
+			common.Provider.gitea
 		}
 		else {
 			eprintln('Invalid provider: ${provider_str}')
@@ -65,10 +66,14 @@ fn main() {
 		exit(1)
 	}
 
-	credentials := get_credentials_for(provider, credentials_path)!
+	credentials := get_credentials_for(provider, credentials_path) or {
+		eprintln(err)
+		exit(1)
+	}
 
 	if !git.can_use_ssh(credentials.base_url) {
 		eprintln('Please setup an SSH Key pair and add the public key to your remote Git server.')
+		eprintln('Refer to the README for instructions.')
 		exit(1)
 	}
 
