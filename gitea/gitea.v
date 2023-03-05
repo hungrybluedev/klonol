@@ -5,7 +5,7 @@ import net.http
 import x.json2
 import time
 
-fn get_data_for_page_number(page int, credentials common.Credentials) ![]common.Repository {
+fn get_data_for_page_number(page int, credentials common.Credential) ![]common.Repository {
 	mut request := http.Request{
 		url: 'https://${credentials.base_url}/api/v1/users/${credentials.username}/repos?page=${page}&limit=100&access_token=${credentials.access_token}'
 		method: .get
@@ -17,7 +17,7 @@ fn get_data_for_page_number(page int, credentials common.Credentials) ![]common.
 	return repositories
 }
 
-pub fn get_repositories(credentials common.Credentials) ![]common.Repository {
+pub fn get_repositories(credentials common.Credential) ![]common.Repository {
 	mut repositories := get_data_for_page_number(1, credentials)!
 
 	for page in 2 .. common.max_page_limit {
