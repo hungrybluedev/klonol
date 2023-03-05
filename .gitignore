@@ -12,4 +12,7 @@ vls.log
 
 # Enviroment files
 *.env
+*.toml
 
+# JetBrains Files
+.idea

@@ -1,14 +1,16 @@
+<!--suppress HtmlDeprecatedAttribute -->
 <div align="center">
 <h1><em>klonol</em></h1>
 
 [vlang.io](https://vlang.io) | [hungrybluedev](https://hungrybluedev.in/)
 
 </div>
+<!--suppress HtmlDeprecatedAttribute -->
 <div align="center">
 
-[![CI][workflowbadge]][workflowurl]
-[![License: MIT][licensebadge]][licenseurl]
-[![Git Latest Tag][gittagbadge]][gittagurl]
+[![CI][workflow_badge]][workflow_url]
+[![License: MIT][license_badge]][license_url]
+[![Git Latest Tag][git_tag_badge]][git_tag_url]
 
 </div>
 
@@ -23,13 +25,15 @@ authenticated user).
    to the authenticated user.
 3. You can list all available repositories, clone them, or run `git pull`
    on existing clones. It uses the user's SSH key to clone.
+4. Cross-platform! We've switched to using TOML for storing credentials and
+   have tested this project extensively on Windows as well.
 
 ## Motivation
 
 I self-host my Gitea instance. It contains several private repositories. There
 are some instances where I need to upgrade the server or perform some
 maintenance. Although I use [Docker Compose](https://docs.docker.com/compose/)
-with mounted volumes to manage the Gitea instance, there may be times where
+with mounted volumes to manage the Gitea instance, there may be times when
 data retention is not possible. I need to restart my service from scratch. In
 order to help with these "from-scratch" scenarios, I wrote this tool.
 
@@ -45,7 +49,8 @@ git server in peace.
 2. You must have a GitHub or Gitea account.
 3. [Add an SSH key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account)
    to your appropriate account.
-4. Generate an [_personal access token_](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
+4. Generate a [_personal access
+   token_](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
    with the minimum scope of `repo` (to allow viewing private repositories)
    and set an expiration of 7 days or the lowest possible. Regenerate this
    key when it expires.
@@ -76,6 +81,10 @@ v build.vsh
 
 The optimized `klonol` binary is saved in the `bin` subdirectory.
 
+**Note:** If you are working on _klonol_ locally and want faster builds for quicker
+prototyping, use `v build.vsh -fast` to use TCC and build an unoptimised executable
+quickly.
+
 **Step 3:** Add to `PATH`
 
 Add the `bin` subdirectory to your `PATH`. You can edit your `~/.bashrc` file
@@ -93,39 +102,34 @@ klonol -h
 
 ## Usage
 
-### Setting the environment variables
+### Setting the variables
 
-For GitHub the following variables need to be set.
+The following variables need to be set in a file called `credentials.toml`.
 
-| Name                | Description                                                                              | Compulsory |
-| ------------------- | ---------------------------------------------------------------------------------------- | ---------- |
-| GITHUB_USERNAME     | The username whose repositories are to be queried                                        | Yes        |
-| GITHUB_ACCESS_TOKEN | The personal access token generated previously                                           | Yes        |
-| GITHUB_BASE_URL     | The base domain to be used to test SSH and make API calls from. Defaults to `github.com` | No         |
+| Name           | Description                                                                              | Compulsory |
+|----------------|------------------------------------------------------------------------------------------|------------|
+| `username`     | The GitHub or Gitea username whose repositories are to be queried                        | Yes        |
+| `access_token` | The personal access token generated previously                                           | Yes        |
+| `base_url`     | The base domain to be used to test SSH and make API calls from. Defaults to `github.com` | For Gitea  |
 
-For Gitea the following need to be set:
+A sample `credentials.toml` file will look like this:
 
-| Name               | Description                                                                                  | Compulsory |
-| ------------------ | -------------------------------------------------------------------------------------------- | ---------- |
-| GITEA_USERNAME     | The username whose repositories are to be queried                                            | Yes        |
-| GITEA_ACCESS_TOKEN | The personal access token generated previously                                               | Yes        |
-| GITEA_BASE_URL     | The domain where the Gitea instance is hosted. Do not include the protocol (e.g. `https://`) | Yes        |
+```toml
+[github]
+username = "your_username"
+access_token = "XYZXYZ"
 
-For Unix-like systems, copy the `.env.sample` file, fill in the appropriate
-values, comment out the ones you don't need. Then run the following to add
-the required variables to your session:
+[gitea]
+base_url = "git.yourdomain.com"
+username = "your_username"
+access_token = "XYZXYZ"
 
-```bash
-source .env
 ```
-
-For Windows, you need to set the environment variables manually (for now).
-If you want to make it analogous to the Unix way, please contribute a solution.
 
 ### Running klonol
 
-Once the environment variables have been set, klonol will retrieve the
-relevant information automatically.
+Once the variables have been set, klonol will retrieve the relevant
+information automatically.
 
 **Help Information**
 
@@ -133,7 +137,7 @@ relevant information automatically.
 # Get the version
 klonol --version
 # output:
-# klonol 0.3.x
+# klonol 0.5.x
 
 
 # Get detailed usage information
@@ -141,27 +145,28 @@ klonol -h
 # OR
 klonol --help
 # output:
-# klonol 0.3.x
+# klonol 0.5.x
 # -----------------------------------------------
 # Usage: klonol [options] [ARGS]
-
+#
 # Description: A CLI tool to "clone all" repositories belonging to you.
-
+#
 # klonol requires Access Tokens to work properly. Refer to README for more
 # information. It retrieves information about ALL available repositories
 # belonging to the authenticated user. Both public and private.
-
+#
 # Please follow safety precautions when storing access tokens, and read
 # the instructions in README carefully.
-
-
+#
+#
 # Options:
-#   -p, --provider <string>   git provider to use
-#   -a, --action <string>     action to perform
+#   -p, --provider <string>   git provider to use (default is github)
+#   -c, --credentials <string>
+#                             path to credentials.toml file (default is ./credentials.toml)
+#   -a, --action <string>     action to perform [list, clone, pull]
 #   -v, --verbose             enable verbose output
 #   -h, --help                display this help and exit
 #   --version                 output version information and exit
-
 ```
 
 **Sample usage flow for GitHub**
@@ -169,6 +174,9 @@ klonol --help
 ```bash
 # Navigate to a directory to store all the repositories in
 cd ~/Backups/GitHub
+
+# Make sure you have the proper 'credentials.toml' file in the directory
+nano credentials.toml
 
 # List all available repositories
 klonol
@@ -188,6 +196,9 @@ klonol -a pull
 ```bash
 # Navigate to a directory to store all the repositories in
 cd ~/Backups/Gitea
+
+# Make sure you have the proper 'credentials.toml' file in the directory
+nano credentials.toml
 
 # List all available repositories
 klonol --provider gitea
@@ -217,9 +228,26 @@ klonol is already added to PATH.
 
 This project is distributed under the [MIT License](LICENSE).
 
-[workflowbadge]: https://github.com/hungrybluedev/klonol/actions/workflows/ci.yml/badge.svg
-[licensebadge]: https://img.shields.io/badge/License-MIT-blue.svg
-[workflowurl]: https://github.com/hungrybluedev/klonol/actions/workflows/ci.yml
-[licenseurl]: https://github.com/hungrybluedev/klonol/blob/main/LICENSE
-[gittagurl]: https://github.com/hungrybluedev/klonol/tags
-[gittagbadge]: https://img.shields.io/github/v/tag/hungrybluedev/klonol?color=purple&include_prereleases&sort=semver
+[workflow_badge]: https://github.com/hungrybluedev/klonol/actions/workflows/ci.yml/badge.svg
+
+[license_badge]: https://img.shields.io/badge/License-MIT-blue.svg
+
+[workflow_url]: https://github.com/hungrybluedev/klonol/actions/workflows/ci.yml
+
+[license_url]: https://github.com/hungrybluedev/klonol/blob/main/LICENSE
+
+[git_tag_url]: https://github.com/hungrybluedev/klonol/tags
+
+[git_tag_badge]: https://img.shields.io/github/v/tag/hungrybluedev/klonol?color=purple&include_prereleases&sort=semver
+
+## Acknowledgements
+
+ - Thanks to [A1ex-N][a1ex_n] for contributing the [idea][toml_idea] and
+[initial code][toml_pr] for supporting cross-platform TOML in favour of
+unix-specific ENV!
+
+[a1ex_n]: https://github.com/A1ex-N
+
+[toml_idea]: https://github.com/hungrybluedev/klonol/issues/1
+
+[toml_pr]: https://github.com/hungrybluedev/klonol/pull/2

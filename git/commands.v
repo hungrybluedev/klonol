@@ -43,7 +43,9 @@ pub fn pull_repository(repository common.Repository, verbose bool) ! {
 	if verbose {
 		print('Check if pull is needed for repository: ${repository.repo_name} ...')
 	}
-	result := os.execute_or_panic('cd ${repository.repo_name} && git remote update && git status')
+
+	_ := os.execute_or_panic('git -C ${repository.repo_name} remote update')
+	result := os.execute_or_panic('git -C ${repository.repo_name} status')
 	if result.output.contains('Your branch is up to date with ') {
 		if verbose {
 			println(' No pull is needed.')
@@ -53,7 +55,7 @@ pub fn pull_repository(repository common.Repository, verbose bool) ! {
 	if verbose {
 		print('Pulling repository: ${repository.repo_name} ...')
 	}
-	os.execute_or_panic('cd ${repository.repo_name} && git pull')
+	os.execute_or_panic('git -C ${repository.repo_name} pull')
 	if verbose {
 		println(' Done.')
 	}
