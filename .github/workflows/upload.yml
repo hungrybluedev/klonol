@@ -13,8 +13,8 @@ jobs:
     runs-on: ${{ matrix.os }}-latest
 
     steps:
-      - name: Install V
-        uses: vlang/setup-v@v1
+      - name: Setup Vlang
+        uses: vlang/setup-v@v1.3
         with:
           check-latest: true
 
