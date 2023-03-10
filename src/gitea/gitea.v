@@ -1,6 +1,6 @@
 module gitea
 
-import src.common
+import common
 import net.http
 import x.json2
 import time

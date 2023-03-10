@@ -1,6 +1,6 @@
 module git
 
-import src.common
+import common
 import os
 import time
 
