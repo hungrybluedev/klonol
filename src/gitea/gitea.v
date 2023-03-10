@@ -1,21 +1,18 @@
-module github
+module gitea
 
-import common
+import src.common
 import net.http
 import x.json2
 import time
 
 fn get_data_for_page_number(page int, credentials common.Credential) ![]common.Repository {
 	mut request := http.Request{
-		url: 'https://api.github.com/search/repositories?q=user:${credentials.username}&page=${page}&per_page=100'
+		url: 'https://${credentials.base_url}/api/v1/users/${credentials.username}/repos?page=${page}&limit=100&access_token=${credentials.access_token}'
 		method: .get
-	}
-	if credentials.access_token != 'unset_value' {
-		request.add_header(.authorization, 'token ${credentials.access_token}')
 	}
 	result := request.do()!
 	raw_data := json2.raw_decode(result.body)!
-	repo_list := raw_data.as_map()['items']!.arr()
+	repo_list := raw_data.arr()
 	repositories := repo_list.map(common.parse_repository(it.as_map())!)
 	return repositories
 }

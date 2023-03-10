@@ -1,9 +1,9 @@
 module main
 
-import common
-import git
-import gitea
-import github
+import src.common
+import src.git
+import src.gitea
+import src.github
 import flag
 import os
 

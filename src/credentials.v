@@ -1,6 +1,6 @@
 module main
 
-import common
+import src.common
 import toml
 import os
 
