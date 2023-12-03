@@ -5,6 +5,8 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  schedule:
+    - cron: "0 0 * * 4"
 
 jobs:
   build:
@@ -20,7 +22,7 @@ jobs:
           check-latest: true
 
       - name: Checkout ${{ github.event.repository.name }}
-        uses: actions/checkout@v3.3.0
+        uses: actions/checkout@v4
 
       - name: Check if code is formatted
         run: |
