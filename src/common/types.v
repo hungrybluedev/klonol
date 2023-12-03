@@ -23,10 +23,10 @@ pub fn (file CredentialFile) to_toml() string {
 
 pub struct Credential {
 pub:
-	provider     Provider [required]
+	provider     Provider @[required]
 	base_url     string = 'github.com'
-	username     string   [required]
-	access_token string   [required]
+	username     string   @[required]
+	access_token string   @[required]
 }
 
 fn (c Credential) to_toml() string {
