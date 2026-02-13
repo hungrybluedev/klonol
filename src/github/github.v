@@ -7,7 +7,7 @@ import time
 
 fn get_data_for_page_number(page int, credentials common.Credential) ![]common.Repository {
 	mut request := http.Request{
-		url: 'https://api.github.com/search/repositories?q=user:${credentials.username}&page=${page}&per_page=100'
+		url:    'https://api.github.com/search/repositories?q=user:${credentials.username}&page=${page}&per_page=100'
 		method: .get
 	}
 	if credentials.access_token != 'unset_value' {

@@ -25,8 +25,8 @@ pub struct Credential {
 pub:
 	provider     Provider @[required]
 	base_url     string = 'github.com'
-	username     string   @[required]
-	access_token string   @[required]
+	username     string @[required]
+	access_token string @[required]
 }
 
 fn (c Credential) to_toml() string {
@@ -51,6 +51,6 @@ pub fn (repo Repository) str() string {
 pub fn parse_repository(map_data map[string]json2.Any) !Repository {
 	return Repository{
 		repo_name: map_data['name']!.str()
-		ssh_url: map_data['ssh_url']!.str()
+		ssh_url:   map_data['ssh_url']!.str()
 	}
 }

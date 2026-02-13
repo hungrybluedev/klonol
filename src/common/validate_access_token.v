@@ -4,7 +4,7 @@ import net.http
 
 pub fn is_access_token_valid(access_token string, endpoint_url string) bool {
 	mut request := http.Request{
-		url: endpoint_url
+		url:    endpoint_url
 		method: .get
 	}
 	if access_token != 'unset_value' {

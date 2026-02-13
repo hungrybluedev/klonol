@@ -10,8 +10,8 @@ fn create_default_config(provider common.Provider, path string) !common.Credenti
 	}
 
 	credential := common.Credential{
-		provider: provider
-		username: 'unset_value'
+		provider:     provider
+		username:     'unset_value'
 		access_token: 'unset_value'
 	}
 	file := common.CredentialFile{
@@ -37,9 +37,9 @@ fn load_config(provider common.Provider, path string) !common.Credential {
 	}
 
 	return common.Credential{
-		provider: provider
-		base_url: (credential.value_opt('base_url') or { toml.Any('github.com') }).string()
-		username: (credential.value_opt('username') or {
+		provider:     provider
+		base_url:     (credential.value_opt('base_url') or { toml.Any('github.com') }).string()
+		username:     (credential.value_opt('username') or {
 			return error('username not provided for ${provider}')
 		}).string()
 		access_token: (credential.value_opt('access_token') or {
@@ -92,9 +92,9 @@ fn get_credentials_for(provider common.Provider, path string) !common.Credential
 	}
 
 	return common.Credential{
-		provider: provider
-		base_url: base_url
-		username: username
+		provider:     provider
+		base_url:     base_url
+		username:     username
 		access_token: access_token
 	}
 }
