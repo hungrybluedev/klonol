@@ -4,6 +4,7 @@ import common
 import git
 import gitea
 import github
+import mock
 import flag
 import os
 
@@ -39,6 +40,9 @@ fn main() {
 		'gitea' {
 			common.Provider.gitea
 		}
+		'mock' {
+			common.Provider.mock
+		}
 		else {
 			eprintln('Invalid provider: ${provider_str}')
 			exit(1)
@@ -71,7 +75,7 @@ fn main() {
 		exit(1)
 	}
 
-	if !git.can_use_ssh(credentials.base_url) {
+	if provider != .mock && !git.can_use_ssh(credentials.base_url) {
 		eprintln('Please setup an SSH Key pair and add the public key to your remote Git server.')
 		eprintln('Refer to the README for instructions.')
 		exit(1)
@@ -83,6 +87,9 @@ fn main() {
 		}
 		.gitea {
 			gitea.get_repositories(credentials)!
+		}
+		.mock {
+			mock.get_repositories(credentials)!
 		}
 	}
 

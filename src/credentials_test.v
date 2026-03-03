@@ -135,6 +135,17 @@ access_token = "mytoken123"
 	assert false, 'load_config should fail when provider section is missing'
 }
 
+fn test_get_credentials_for_mock() {
+	cred := get_credentials_for(.mock, '') or {
+		assert false, 'get_credentials_for mock should not fail: ${err}'
+		return
+	}
+	assert cred.provider == .mock
+	assert cred.username == 'mock-user'
+	assert cred.access_token == 'mock-token'
+	assert cred.base_url == 'localhost'
+}
+
 fn test_load_config_missing_username() {
 	tmp_path := os.join_path(os.temp_dir(), 'klonol_test_no_username.toml')
 	defer {

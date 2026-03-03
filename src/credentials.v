@@ -56,6 +56,15 @@ README.md for more instructions.\n')
 }
 
 fn get_credentials_for(provider common.Provider, path string) !common.Credential {
+	if provider == .mock {
+		return common.Credential{
+			provider:     .mock
+			base_url:     'localhost'
+			username:     'mock-user'
+			access_token: 'mock-token'
+		}
+	}
+
 	credentials := load_config(provider, path)!
 	base_url := credentials.base_url
 
@@ -85,6 +94,7 @@ fn get_credentials_for(provider common.Provider, path string) !common.Credential
 	token_is_valid := match provider {
 		.github { common.is_access_token_valid(access_token, 'https://api.github.com/user/issues') }
 		.gitea { common.is_access_token_valid(access_token, 'https://${base_url}/api/v1/user?access_token=${access_token}') }
+		.mock { true }
 	}
 
 	if !token_is_valid {

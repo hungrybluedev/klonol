@@ -6,6 +6,7 @@ import strings
 pub enum Provider {
 	github
 	gitea
+	mock
 }
 
 pub struct CredentialFile {
