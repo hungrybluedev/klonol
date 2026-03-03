@@ -10,9 +10,10 @@ build
 *.dll
 vls.log
 
-# Enviroment files
+# Environment files
 *.env
 *.toml
 
-# JetBrains Files
+# IDE Files
 .idea
+.vscode
