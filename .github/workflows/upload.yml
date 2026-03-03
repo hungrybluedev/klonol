@@ -31,7 +31,7 @@ jobs:
           v build.vsh
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: klonol-${{ matrix.os }}
           path: bin
