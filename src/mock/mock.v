@@ -6,10 +6,14 @@ import x.json2
 
 const mock_data_path = os.join_path(os.temp_dir(), 'klonol_mock_repos.json')
 
+fn json_escape(s string) string {
+	return s.replace('\\', '\\\\')
+}
+
 pub fn set_repositories(repos []common.Repository) {
 	mut items := []string{}
 	for repo in repos {
-		items << '{"name": "${repo.repo_name}", "ssh_url": "${repo.ssh_url}"}'
+		items << '{"name": "${json_escape(repo.repo_name)}", "ssh_url": "${json_escape(repo.ssh_url)}"}'
 	}
 	json_str := '[${items.join(',')}]'
 	os.write_file(mock_data_path, json_str) or { panic(err) }
