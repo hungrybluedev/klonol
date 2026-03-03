@@ -22,7 +22,10 @@ pub fn clone_repository(repository common.Repository, verbose bool) ! {
 		return
 	}
 	print('Cloning repository: ${repository.repo_name} ...')
-	os.execute_or_panic('git clone ${repository.ssh_url}')
+	clone_result := os.execute('git clone ${repository.ssh_url}')
+	if clone_result.exit_code != 0 {
+		return error('git clone failed for ${repository.repo_name}: ${clone_result.output}')
+	}
 	println(' Done.')
 }
 
@@ -44,8 +47,14 @@ pub fn pull_repository(repository common.Repository, verbose bool) ! {
 		print('Check if pull is needed for repository: ${repository.repo_name} ...')
 	}
 
-	_ := os.execute_or_panic('git -C ${repository.repo_name} remote update')
-	result := os.execute_or_panic('git -C ${repository.repo_name} status')
+	update_result := os.execute('git -C ${repository.repo_name} remote update')
+	if update_result.exit_code != 0 {
+		return error('git remote update failed for ${repository.repo_name}: ${update_result.output}')
+	}
+	result := os.execute('git -C ${repository.repo_name} status')
+	if result.exit_code != 0 {
+		return error('git status failed for ${repository.repo_name}: ${result.output}')
+	}
 	if result.output.contains('Your branch is up to date with ') {
 		if verbose {
 			println(' No pull is needed.')
@@ -55,7 +64,10 @@ pub fn pull_repository(repository common.Repository, verbose bool) ! {
 	if verbose {
 		print('Pulling repository: ${repository.repo_name} ...')
 	}
-	os.execute_or_panic('git -C ${repository.repo_name} pull')
+	pull_result := os.execute('git -C ${repository.repo_name} pull')
+	if pull_result.exit_code != 0 {
+		return error('git pull failed for ${repository.repo_name}: ${pull_result.output}')
+	}
 	if verbose {
 		println(' Done.')
 	}

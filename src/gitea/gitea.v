@@ -11,8 +11,8 @@ fn get_data_for_page_number(page int, credentials common.Credential) ![]common.R
 		method: .get
 	}
 	result := request.do()!
-	raw_data := json2.raw_decode(result.body)!
-	repo_list := raw_data.arr()
+	raw_data := json2.decode[json2.Any](result.body)!
+	repo_list := raw_data.as_array()
 	repositories := repo_list.map(common.parse_repository(it.as_map())!)
 	return repositories
 }
