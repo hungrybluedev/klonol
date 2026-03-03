@@ -22,7 +22,7 @@ jobs:
           check-latest: true
 
       - name: Checkout ${{ github.event.repository.name }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Check if code is formatted
         run: |
