@@ -19,7 +19,7 @@ jobs:
           check-latest: true
 
       - name: Checkout ${{ github.event.repository.name }}
-        uses: actions/checkout@v3.3.0
+        uses: actions/checkout@v4
 
       - name: Check if code is formatted
         run: |
@@ -31,7 +31,7 @@ jobs:
           v build.vsh
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: klonol-${{ matrix.os }}
           path: bin
