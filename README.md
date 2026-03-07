@@ -136,12 +136,12 @@ klonol -h
 
 The following variables need to be set in a file called `credentials.toml`.
 
-| Name           | Description                                                                              | Compulsory        |
-|----------------|------------------------------------------------------------------------------------------|-------------------|
-| `username`     | The GitHub, Gitea, or Forgejo username whose repositories are to be queried              | Yes               |
-| `access_token` | The personal access token generated previously                                           | Yes               |
-| `base_url`     | The base domain to be used to test SSH and make API calls from. Defaults to `github.com` | For Gitea/Forgejo |
-| `exclude`      | List of repos to skip. Supports exact names (`"user/repo"`) and glob patterns (`"org/*"`) | No               |
+| Name           | Description                                                                               | Compulsory        |
+| -------------- | ----------------------------------------------------------------------------------------- | ----------------- |
+| `username`     | The GitHub, Gitea, or Forgejo username whose repositories are to be queried               | Yes               |
+| `access_token` | The personal access token generated previously                                            | Yes               |
+| `base_url`     | The base domain to be used to test SSH and make API calls from. Defaults to `github.com`  | For Gitea/Forgejo |
+| `exclude`      | List of repos to skip. Supports exact names (`"user/repo"`) and glob patterns (`"org/*"`) | No                |
 
 Archived repositories are automatically excluded.
 
@@ -308,30 +308,32 @@ downloaded, run `v build.vsh`.
 You don't need to change the PATH variable if
 klonol is already added to PATH.
 
+## Automated Backups
+
+klonol includes a V shell script for fully automated backups with
+[restic](https://restic.net/) and [Backblaze B2](https://www.backblaze.com/cloud-storage).
+It handles updating klonol, cloning/pulling all repos, creating encrypted
+deduplicated snapshots, and pruning old backups — all via a weekly cron job.
+
+See [backup/README.md](backup/README.md) for setup instructions.
+
 ## License
 
 This project is distributed under the [MIT License](LICENSE).
 
 [workflow_badge]: https://github.com/hungrybluedev/klonol/actions/workflows/ci.yml/badge.svg
-
 [license_badge]: https://img.shields.io/badge/License-MIT-blue.svg
-
 [workflow_url]: https://github.com/hungrybluedev/klonol/actions/workflows/ci.yml
-
 [license_url]: https://github.com/hungrybluedev/klonol/blob/main/LICENSE
-
 [git_tag_url]: https://github.com/hungrybluedev/klonol/tags
-
 [git_tag_badge]: https://img.shields.io/github/v/tag/hungrybluedev/klonol?color=purple&include_prereleases&sort=semver
 
 ## Acknowledgements
 
- - Thanks to [A1ex-N][a1ex_n] for contributing the [idea][toml_idea] and
-[initial code][toml_pr] for supporting cross-platform TOML in favour of
-unix-specific ENV!
+- Thanks to [A1ex-N][a1ex_n] for contributing the [idea][toml_idea] and
+  [initial code][toml_pr] for supporting cross-platform TOML in favour of
+  unix-specific ENV!
 
 [a1ex_n]: https://github.com/A1ex-N
-
 [toml_idea]: https://github.com/hungrybluedev/klonol/issues/1
-
 [toml_pr]: https://github.com/hungrybluedev/klonol/pull/2
