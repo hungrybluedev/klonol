@@ -62,8 +62,8 @@ fn test_clone_repository() {
 		return
 	}
 
-	// git clone <bare_path> creates a directory named "remote" (from remote.git)
 	repo := common.Repository{
+		full_name: 'testowner/remote'
 		repo_name: 'remote'
 		ssh_url:   bare_path
 	}
@@ -86,7 +86,7 @@ fn test_clone_repository() {
 		assert false, 'clone_repository failed: ${err}'
 		return
 	}
-	assert os.exists(os.join_path(clone_dir, 'remote'))
+	assert os.exists(os.join_path(clone_dir, 'testowner', 'remote'))
 }
 
 fn test_clone_repository_already_exists() {
@@ -101,12 +101,13 @@ fn test_clone_repository_already_exists() {
 	}
 
 	clone_dir := os.join_path(tmp, 'clones')
-	os.mkdir_all(os.join_path(clone_dir, 'existing-repo')) or {
+	os.mkdir_all(os.join_path(clone_dir, 'testowner', 'existing-repo')) or {
 		assert false, 'mkdir failed'
 		return
 	}
 
 	repo := common.Repository{
+		full_name: 'testowner/existing-repo'
 		repo_name: 'existing-repo'
 		ssh_url:   bare_path
 	}
@@ -138,6 +139,7 @@ fn test_pull_repository_nonexistent() {
 	}
 
 	repo := common.Repository{
+		full_name: 'user/nonexistent-repo'
 		repo_name: 'nonexistent-repo'
 		ssh_url:   'git@example.com:user/nonexistent.git'
 	}
@@ -170,6 +172,7 @@ fn test_pull_repository_up_to_date() {
 	}
 
 	repo := common.Repository{
+		full_name: 'testowner/remote'
 		repo_name: 'remote'
 		ssh_url:   bare_path
 	}

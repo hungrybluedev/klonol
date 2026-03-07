@@ -15,17 +15,25 @@ pub fn can_use_ssh(base_url string) bool {
 }
 
 pub fn clone_repository(repository common.Repository, verbose bool, use_https bool) ! {
-	if os.exists(repository.repo_name) {
+	local_path := repository.full_name
+	if os.exists(local_path) {
 		if verbose {
-			println('Repository already exists at ${repository.repo_name}. Not cloning it.')
+			println('Repository already exists at ${local_path}. Not cloning it.')
 		}
 		return
 	}
-	print('Cloning repository: ${repository.repo_name} ...')
+	// Create owner directory if it doesn't exist (e.g. "hungrybluedev/")
+	owner_dir := os.dir(local_path)
+	if owner_dir.len > 0 && !os.exists(owner_dir) {
+		os.mkdir_all(owner_dir) or {
+			return error('Failed to create directory ${owner_dir}: ${err}')
+		}
+	}
+	print('Cloning repository: ${local_path} ...')
 	url := repository.effective_url(use_https)
-	clone_result := os.execute('git clone ${url}')
+	clone_result := os.execute('git clone ${url} ${local_path}')
 	if clone_result.exit_code != 0 {
-		return error('git clone failed for ${repository.repo_name}: ${clone_result.output}')
+		return error('git clone failed for ${local_path}: ${clone_result.output}')
 	}
 	println(' Done.')
 }
@@ -38,23 +46,24 @@ pub fn clone_all_repositories(repositories []common.Repository, verbose bool, us
 }
 
 pub fn pull_repository(repository common.Repository, verbose bool) ! {
-	if !os.exists(repository.repo_name) {
+	local_path := repository.full_name
+	if !os.exists(local_path) {
 		if verbose {
-			println('Repository does not exist at ${repository.repo_name}. Not pulling it.')
+			println('Repository does not exist at ${local_path}. Not pulling it.')
 		}
 		return
 	}
 	if verbose {
-		print('Check if pull is needed for repository: ${repository.repo_name} ...')
+		print('Check if pull is needed for repository: ${local_path} ...')
 	}
 
-	update_result := os.execute('git -C ${repository.repo_name} remote update')
+	update_result := os.execute('git -C ${local_path} remote update')
 	if update_result.exit_code != 0 {
-		return error('git remote update failed for ${repository.repo_name}: ${update_result.output}')
+		return error('git remote update failed for ${local_path}: ${update_result.output}')
 	}
-	result := os.execute('git -C ${repository.repo_name} status')
+	result := os.execute('git -C ${local_path} status')
 	if result.exit_code != 0 {
-		return error('git status failed for ${repository.repo_name}: ${result.output}')
+		return error('git status failed for ${local_path}: ${result.output}')
 	}
 	if result.output.contains('Your branch is up to date with ') {
 		if verbose {
@@ -63,11 +72,11 @@ pub fn pull_repository(repository common.Repository, verbose bool) ! {
 		return
 	}
 	if verbose {
-		print('Pulling repository: ${repository.repo_name} ...')
+		print('Pulling repository: ${local_path} ...')
 	}
-	pull_result := os.execute('git -C ${repository.repo_name} pull')
+	pull_result := os.execute('git -C ${local_path} pull')
 	if pull_result.exit_code != 0 {
-		return error('git pull failed for ${repository.repo_name}: ${pull_result.output}')
+		return error('git pull failed for ${local_path}: ${pull_result.output}')
 	}
 	if verbose {
 		println(' Done.')

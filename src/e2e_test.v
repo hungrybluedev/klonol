@@ -60,10 +60,12 @@ fn test_e2e_clone_from_mock_provider() {
 
 	mock.set_repositories([
 		common.Repository{
+			full_name: 'testowner/repo-alpha'
 			repo_name: 'repo-alpha'
 			ssh_url:   bare_a
 		},
 		common.Repository{
+			full_name: 'testowner/repo-beta'
 			repo_name: 'repo-beta'
 			ssh_url:   bare_b
 		},
@@ -100,10 +102,10 @@ fn test_e2e_clone_from_mock_provider() {
 		return
 	}
 
-	assert os.exists(os.join_path(clone_dir, 'repo-alpha'))
-	assert os.exists(os.join_path(clone_dir, 'repo-beta'))
-	assert os.exists(os.join_path(clone_dir, 'repo-alpha', 'README.md'))
-	assert os.exists(os.join_path(clone_dir, 'repo-beta', 'README.md'))
+	assert os.exists(os.join_path(clone_dir, 'testowner', 'repo-alpha'))
+	assert os.exists(os.join_path(clone_dir, 'testowner', 'repo-beta'))
+	assert os.exists(os.join_path(clone_dir, 'testowner', 'repo-alpha', 'README.md'))
+	assert os.exists(os.join_path(clone_dir, 'testowner', 'repo-beta', 'README.md'))
 }
 
 fn test_e2e_pull_after_clone() {
@@ -124,6 +126,7 @@ fn test_e2e_pull_after_clone() {
 
 	repos := [
 		common.Repository{
+			full_name: 'testowner/pull-test'
 			repo_name: 'pull-test'
 			ssh_url:   bare_path
 		},
@@ -157,7 +160,7 @@ fn test_e2e_pull_after_clone() {
 		assert false, 'clone failed: ${err}'
 		return
 	}
-	assert os.exists(os.join_path(clone_dir, 'pull-test'))
+	assert os.exists(os.join_path(clone_dir, 'testowner', 'pull-test'))
 
 	git.pull_existing_repositories(fetched, true) or {
 		assert false, 'pull failed: ${err}'
@@ -178,6 +181,7 @@ fn test_e2e_pull_nonexistent_repos() {
 
 	repos := [
 		common.Repository{
+			full_name: 'user/does-not-exist'
 			repo_name: 'does-not-exist'
 			ssh_url:   '/nonexistent/path.git'
 		},
@@ -226,6 +230,7 @@ fn test_e2e_clone_idempotent() {
 
 	repos := [
 		common.Repository{
+			full_name: 'testowner/idem-repo'
 			repo_name: 'idem-repo'
 			ssh_url:   bare_path
 		},
@@ -263,5 +268,5 @@ fn test_e2e_clone_idempotent() {
 		assert false, 'second clone should not fail: ${err}'
 		return
 	}
-	assert os.exists(os.join_path(clone_dir, 'idem-repo'))
+	assert os.exists(os.join_path(clone_dir, 'testowner', 'idem-repo'))
 }
