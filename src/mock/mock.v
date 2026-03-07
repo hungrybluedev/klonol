@@ -13,7 +13,7 @@ fn json_escape(s string) string {
 pub fn set_repositories(repos []common.Repository) {
 	mut items := []string{}
 	for repo in repos {
-		items << '{"name": "${json_escape(repo.repo_name)}", "ssh_url": "${json_escape(repo.ssh_url)}"}'
+		items << '{"full_name": "${json_escape(repo.full_name)}", "name": "${json_escape(repo.repo_name)}", "ssh_url": "${json_escape(repo.ssh_url)}", "clone_url": "${json_escape(repo.clone_url)}", "archived": ${repo.archived}}'
 	}
 	json_str := '[${items.join(',')}]'
 	os.write_file(mock_data_path, json_str) or { panic(err) }

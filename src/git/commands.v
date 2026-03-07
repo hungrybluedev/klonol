@@ -14,7 +14,7 @@ pub fn can_use_ssh(base_url string) bool {
 	return result.output.contains('successfully authenticated')
 }
 
-pub fn clone_repository(repository common.Repository, verbose bool) ! {
+pub fn clone_repository(repository common.Repository, verbose bool, use_https bool) ! {
 	if os.exists(repository.repo_name) {
 		if verbose {
 			println('Repository already exists at ${repository.repo_name}. Not cloning it.')
@@ -22,16 +22,17 @@ pub fn clone_repository(repository common.Repository, verbose bool) ! {
 		return
 	}
 	print('Cloning repository: ${repository.repo_name} ...')
-	clone_result := os.execute('git clone ${repository.ssh_url}')
+	url := repository.effective_url(use_https)
+	clone_result := os.execute('git clone ${url}')
 	if clone_result.exit_code != 0 {
 		return error('git clone failed for ${repository.repo_name}: ${clone_result.output}')
 	}
 	println(' Done.')
 }
 
-pub fn clone_all_repositories(repositories []common.Repository, verbose bool) ! {
+pub fn clone_all_repositories(repositories []common.Repository, verbose bool, use_https bool) ! {
 	for repository in repositories {
-		clone_repository(repository, verbose)!
+		clone_repository(repository, verbose, use_https)!
 		time.sleep(common.sleep_duration)
 	}
 }

@@ -20,20 +20,22 @@ authenticated user).
 
 ## Features
 
-1. Supports GitHub and [Gitea](https://gitea.io/en-us/).
+1. Supports GitHub, [Gitea](https://gitea.io/en-us/), and [Forgejo](https://forgejo.org/).
 2. Retrieves information about both public _and_ private repositories belonging
    to the authenticated user.
 3. You can list all available repositories, clone them, or run `git pull`
-   on existing clones. It uses the user's SSH key to clone.
-4. Cross-platform! We've switched to using TOML for storing credentials and
+   on existing clones. Supports both SSH and HTTPS (with access token) cloning.
+4. Exclude repos with a denylist (supports `"org/*"` glob patterns). Archived
+   repos are automatically skipped.
+5. Cross-platform! We've switched to using TOML for storing credentials and
    have tested this project extensively on Windows as well.
 
 ## Motivation
 
-I self-host my Gitea instance. It contains several private repositories. There
-are some instances where I need to upgrade the server or perform some
+I self-host my Forgejo instance. It contains several private repositories.
+There are some instances where I need to upgrade the server or perform some
 maintenance. Although I use [Docker Compose](https://docs.docker.com/compose/)
-with mounted volumes to manage the Gitea instance, there may be times when
+with mounted volumes to manage the instance, there may be times when
 data retention is not possible. I need to restart my service from scratch. In
 order to help with these "from-scratch" scenarios, I wrote this tool.
 
@@ -46,14 +48,42 @@ git server in peace.
 1. You must have Git installed. Use your package manager or navigate to
    [Git's Website](https://git-scm.com/downloads) to download the latest
    version.
-2. You must have a GitHub or Gitea account.
-3. [Add an SSH key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account)
-   to your appropriate account.
-4. Generate a [_personal access
-   token_](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
-   with the minimum scope of `repo` (to allow viewing private repositories)
-   and set an expiration of 7 days or the lowest possible. Regenerate this
-   key when it expires.
+2. You must have a GitHub, Gitea, or Forgejo account.
+3. If cloning over SSH, [add an SSH key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account)
+   to your appropriate account. If cloning over HTTPS, SSH keys are not required.
+4. Generate a personal access token (see instructions below).
+
+### Generating Access Tokens
+
+#### GitHub
+
+1. Go to [github.com](https://github.com) -> Avatar (top-right) -> **Settings**
+2. Scroll to **Developer settings** (bottom of left sidebar)
+3. **Personal access tokens** -> **Tokens (classic)**
+4. **Generate new token** -> **Generate new token (classic)**
+5. Name: `klonol-backup`, Expiration: 90 days (or your preference)
+6. Scopes: check **`repo`** (full control of private repositories)
+7. Click **Generate token** and copy it immediately
+
+Use a _classic_ token (not fine-grained) if you want access to organization
+repos you belong to.
+
+#### Gitea
+
+1. Go to your Gitea instance -> Avatar (top-right) -> **Settings**
+2. **Applications** tab
+3. Under "Generate New Token", enter a name and select scopes:
+   **read:repository** and **read:user** at minimum
+4. Click **Generate Token** and copy it immediately
+
+#### Forgejo
+
+1. Go to your Forgejo instance -> Avatar (top-right) -> **Settings**
+2. **Applications** tab
+3. Under "Manage Access Tokens", enter a name (e.g. `klonol-backup`)
+4. Set **Repository and Organization Access** to "All (public, private, and limited)"
+5. Select permissions: **repository: Read** and **user: Read** at minimum
+6. Click **Generate Token** and copy it immediately
 
 ## Installation
 
@@ -106,11 +136,14 @@ klonol -h
 
 The following variables need to be set in a file called `credentials.toml`.
 
-| Name           | Description                                                                              | Compulsory |
-|----------------|------------------------------------------------------------------------------------------|------------|
-| `username`     | The GitHub or Gitea username whose repositories are to be queried                        | Yes        |
-| `access_token` | The personal access token generated previously                                           | Yes        |
-| `base_url`     | The base domain to be used to test SSH and make API calls from. Defaults to `github.com` | For Gitea  |
+| Name           | Description                                                                              | Compulsory        |
+|----------------|------------------------------------------------------------------------------------------|-------------------|
+| `username`     | The GitHub, Gitea, or Forgejo username whose repositories are to be queried              | Yes               |
+| `access_token` | The personal access token generated previously                                           | Yes               |
+| `base_url`     | The base domain to be used to test SSH and make API calls from. Defaults to `github.com` | For Gitea/Forgejo |
+| `exclude`      | List of repos to skip. Supports exact names (`"user/repo"`) and glob patterns (`"org/*"`) | No               |
+
+Archived repositories are automatically excluded.
 
 A sample `credentials.toml` file will look like this:
 
@@ -118,13 +151,25 @@ A sample `credentials.toml` file will look like this:
 [github]
 username = "your_username"
 access_token = "XYZXYZ"
+exclude = [
+  "some-org/*",
+  "your_username/old-repo",
+]
 
 [gitea]
 base_url = "git.yourdomain.com"
 username = "your_username"
 access_token = "XYZXYZ"
 
+[forgejo]
+base_url = "forge.yourdomain.com"
+username = "your_username"
+access_token = "XYZXYZ"
 ```
+
+To build your exclude list, first run `klonol` (or `klonol -p forgejo`) to
+list all available repositories. The output is formatted so you can copy
+entries directly into the `exclude` array.
 
 ### Running klonol
 
@@ -165,6 +210,7 @@ klonol --help
 #                             path to credentials.toml file (default is ./credentials.toml)
 #   -a, --action <string>     action to perform [list, clone, pull]
 #   -v, --verbose             enable verbose output
+#   --use-https               clone over HTTPS with access token instead of SSH
 #   -h, --help                display this help and exit
 #   --version                 output version information and exit
 ```
@@ -211,8 +257,46 @@ klonol --action clone --provider gitea
 klonol -a clone -p gitea
 
 # ... After some time has passed ...
-# Pull all changes from GitHub
+# Pull all changes from Gitea
 klonol -a pull -p gitea
+```
+
+**Sample usage flow for Forgejo**
+
+```bash
+# Navigate to a directory to store all the repositories in
+cd ~/Backups/Forgejo
+
+# Make sure you have the proper 'credentials.toml' file in the directory
+nano credentials.toml
+
+# List all available repositories
+klonol --provider forgejo
+# OR
+klonol -p forgejo
+
+# Clone all available repositories
+klonol --action clone --provider forgejo
+# OR
+klonol -a clone -p forgejo
+
+# ... After some time has passed ...
+# Pull all changes from Forgejo
+klonol -a pull -p forgejo
+```
+
+**Cloning over HTTPS (instead of SSH)**
+
+If you prefer HTTPS cloning (or don't have SSH keys set up), use the
+`--use-https` flag. The access token is automatically embedded in the
+clone URL for authentication.
+
+```bash
+# Clone all GitHub repos over HTTPS
+klonol -a clone --use-https
+
+# Clone all Forgejo repos over HTTPS
+klonol -a clone -p forgejo --use-https
 ```
 
 ### Updating klonol

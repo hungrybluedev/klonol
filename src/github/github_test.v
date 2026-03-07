@@ -5,7 +5,7 @@ import x.json2
 
 fn parse_repos_from_github_json(raw_json string) ![]common.Repository {
 	raw_data := json2.decode[json2.Any](raw_json)!
-	repo_list := raw_data.as_map()['items']!.as_array()
+	repo_list := raw_data.as_array()
 	mut repos := []common.Repository{}
 	for item in repo_list {
 		repos << common.parse_repository(item.as_map())!
@@ -14,7 +14,7 @@ fn parse_repos_from_github_json(raw_json string) ![]common.Repository {
 }
 
 fn test_github_response_parsing() {
-	raw_json := '{"items": [{"name": "repo1", "ssh_url": "git@github.com:user/repo1.git"}, {"name": "repo2", "ssh_url": "git@github.com:user/repo2.git"}]}'
+	raw_json := '[{"name": "repo1", "ssh_url": "git@github.com:user/repo1.git"}, {"name": "repo2", "ssh_url": "git@github.com:user/repo2.git"}]'
 	repos := parse_repos_from_github_json(raw_json) or {
 		assert false, 'parsing failed: ${err}'
 		return
@@ -26,8 +26,8 @@ fn test_github_response_parsing() {
 	assert repos[1].ssh_url == 'git@github.com:user/repo2.git'
 }
 
-fn test_github_empty_items() {
-	raw_json := '{"items": []}'
+fn test_github_empty_response() {
+	raw_json := '[]'
 	repos := parse_repos_from_github_json(raw_json) or {
 		assert false, 'parsing failed: ${err}'
 		return
@@ -36,7 +36,7 @@ fn test_github_empty_items() {
 }
 
 fn test_github_multiple_repos_with_varied_names() {
-	raw_json := '{"items": [{"name": "my-project", "ssh_url": "git@github.com:user/my-project.git"}, {"name": "another_repo", "ssh_url": "git@github.com:user/another_repo.git"}, {"name": "repo.with.dots", "ssh_url": "git@github.com:user/repo.with.dots.git"}]}'
+	raw_json := '[{"name": "my-project", "ssh_url": "git@github.com:user/my-project.git"}, {"name": "another_repo", "ssh_url": "git@github.com:user/another_repo.git"}, {"name": "repo.with.dots", "ssh_url": "git@github.com:user/repo.with.dots.git"}]'
 	repos := parse_repos_from_github_json(raw_json) or {
 		assert false, 'parsing failed: ${err}'
 		return

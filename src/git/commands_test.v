@@ -82,7 +82,7 @@ fn test_clone_repository() {
 		os.chdir(old_dir) or {}
 	}
 
-	clone_repository(repo, true) or {
+	clone_repository(repo, true, false) or {
 		assert false, 'clone_repository failed: ${err}'
 		return
 	}
@@ -121,7 +121,7 @@ fn test_clone_repository_already_exists() {
 	}
 
 	// Should succeed without error (skips cloning)
-	clone_repository(repo, true) or {
+	clone_repository(repo, true, false) or {
 		assert false, 'clone_repository should not fail for existing dir: ${err}'
 		return
 	}
@@ -190,7 +190,7 @@ fn test_pull_repository_up_to_date() {
 	}
 
 	// Clone first
-	clone_repository(repo, false) or {
+	clone_repository(repo, false, false) or {
 		assert false, 'clone failed: ${err}'
 		return
 	}

@@ -36,6 +36,12 @@ fn load_config(provider common.Provider, path string) !common.Credential {
 		return error('Could not read the credentials for ${provider}')
 	}
 
+	exclude_toml := credential.value_opt('exclude') or { toml.Any([]toml.Any{}) }
+	mut exclude := []string{}
+	for item in exclude_toml.array() {
+		exclude << item.string()
+	}
+
 	return common.Credential{
 		provider:     provider
 		base_url:     (credential.value_opt('base_url') or { toml.Any('github.com') }).string()
@@ -45,6 +51,7 @@ fn load_config(provider common.Provider, path string) !common.Credential {
 		access_token: (credential.value_opt('access_token') or {
 			return error('access_token not provided ')
 		}).string()
+		exclude:      exclude
 	}
 }
 
@@ -93,7 +100,7 @@ fn get_credentials_for(provider common.Provider, path string) !common.Credential
 
 	token_is_valid := match provider {
 		.github { common.is_access_token_valid(access_token, 'https://api.github.com/user/issues') }
-		.gitea { common.is_access_token_valid(access_token, 'https://${base_url}/api/v1/user?access_token=${access_token}') }
+		.gitea, .forgejo { common.is_access_token_valid(access_token, 'https://${base_url}/api/v1/user?access_token=${access_token}') }
 		.mock { true }
 	}
 
@@ -106,5 +113,6 @@ fn get_credentials_for(provider common.Provider, path string) !common.Credential
 		base_url:     base_url
 		username:     username
 		access_token: access_token
+		exclude:      credentials.exclude
 	}
 }

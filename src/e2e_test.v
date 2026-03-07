@@ -95,7 +95,7 @@ fn test_e2e_clone_from_mock_provider() {
 		os.chdir(old_dir) or {}
 	}
 
-	git.clone_all_repositories(fetched, true) or {
+	git.clone_all_repositories(fetched, true, false) or {
 		assert false, 'clone_all_repositories failed: ${err}'
 		return
 	}
@@ -153,7 +153,7 @@ fn test_e2e_pull_after_clone() {
 		os.chdir(old_dir) or {}
 	}
 
-	git.clone_all_repositories(fetched, false) or {
+	git.clone_all_repositories(fetched, false, false) or {
 		assert false, 'clone failed: ${err}'
 		return
 	}
@@ -255,11 +255,11 @@ fn test_e2e_clone_idempotent() {
 		os.chdir(old_dir) or {}
 	}
 
-	git.clone_all_repositories(fetched, true) or {
+	git.clone_all_repositories(fetched, true, false) or {
 		assert false, 'first clone failed: ${err}'
 		return
 	}
-	git.clone_all_repositories(fetched, true) or {
+	git.clone_all_repositories(fetched, true, false) or {
 		assert false, 'second clone should not fail: ${err}'
 		return
 	}

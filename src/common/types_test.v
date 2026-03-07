@@ -4,15 +4,29 @@ import x.json2
 
 fn test_parse_repository_valid() {
 	data := {
-		'name':    json2.Any('my-repo')
-		'ssh_url': json2.Any('git@github.com:user/my-repo.git')
+		'full_name': json2.Any('user/my-repo')
+		'name':      json2.Any('my-repo')
+		'ssh_url':   json2.Any('git@github.com:user/my-repo.git')
 	}
 	repo := parse_repository(data) or {
 		assert false, 'parse_repository should not fail for valid data'
 		return
 	}
+	assert repo.full_name == 'user/my-repo'
 	assert repo.repo_name == 'my-repo'
 	assert repo.ssh_url == 'git@github.com:user/my-repo.git'
+}
+
+fn test_parse_repository_missing_full_name_uses_name() {
+	data := {
+		'name':    json2.Any('my-repo')
+		'ssh_url': json2.Any('git@github.com:user/my-repo.git')
+	}
+	repo := parse_repository(data) or {
+		assert false, 'parse_repository should not fail'
+		return
+	}
+	assert repo.full_name == 'my-repo'
 }
 
 fn test_parse_repository_missing_name() {
@@ -48,11 +62,42 @@ fn test_parse_repository_empty_map() {
 
 fn test_repository_str() {
 	repo := Repository{
+		full_name: 'user/test-repo'
+		repo_name: 'test-repo'
+		ssh_url:   'git@github.com:user/test-repo.git'
+		clone_url: 'https://github.com/user/test-repo.git'
+	}
+	result := repo.str()
+	assert result == 'user/test-repo'
+}
+
+fn test_effective_url_ssh() {
+	repo := Repository{
+		full_name: 'user/test-repo'
+		repo_name: 'test-repo'
+		ssh_url:   'git@github.com:user/test-repo.git'
+		clone_url: 'https://github.com/user/test-repo.git'
+	}
+	assert repo.effective_url(false) == 'git@github.com:user/test-repo.git'
+}
+
+fn test_effective_url_https() {
+	repo := Repository{
+		full_name: 'user/test-repo'
+		repo_name: 'test-repo'
+		ssh_url:   'git@github.com:user/test-repo.git'
+		clone_url: 'https://github.com/user/test-repo.git'
+	}
+	assert repo.effective_url(true) == 'https://github.com/user/test-repo.git'
+}
+
+fn test_effective_url_https_fallback_to_ssh() {
+	repo := Repository{
+		full_name: 'user/test-repo'
 		repo_name: 'test-repo'
 		ssh_url:   'git@github.com:user/test-repo.git'
 	}
-	result := repo.str()
-	assert result == 'Name: test-repo, URL: git@github.com:user/test-repo.git'
+	assert repo.effective_url(true) == 'git@github.com:user/test-repo.git'
 }
 
 fn test_credential_to_toml() {

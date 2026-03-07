@@ -2,11 +2,26 @@ module main
 
 import common
 import git
+import forgejo
 import gitea
 import github
 import mock
 import flag
 import os
+
+fn is_excluded(full_name string, exclude []string) bool {
+	for pattern in exclude {
+		if pattern.ends_with('/*') {
+			prefix := pattern[..pattern.len - 2]
+			if full_name.starts_with('${prefix}/') {
+				return true
+			}
+		} else if full_name == pattern {
+			return true
+		}
+	}
+	return false
+}
 
 fn main() {
 	mut fp := flag.new_flag_parser(os.args)
@@ -20,6 +35,7 @@ fn main() {
 	credentials_path := fp.string('credentials', `c`, 'credentials.toml', 'path to credentials.toml file (default is ./credentials.toml)').to_lower()
 	action_str := fp.string('action', `a`, 'list', 'action to perform [list, clone, pull] ').to_lower()
 	verbose := fp.bool('verbose', `v`, false, 'enable verbose output')
+	use_https := fp.bool('use-https', 0, false, 'clone over HTTPS with access token instead of SSH')
 
 	additional_args := fp.finalize() or {
 		eprintln(err)
@@ -39,6 +55,9 @@ fn main() {
 		}
 		'gitea' {
 			common.Provider.gitea
+		}
+		'forgejo' {
+			common.Provider.forgejo
 		}
 		'mock' {
 			common.Provider.mock
@@ -75,31 +94,60 @@ fn main() {
 		exit(1)
 	}
 
-	if provider != .mock && !git.can_use_ssh(credentials.base_url) {
+	if action == .clone && !use_https && provider != .mock && !git.can_use_ssh(credentials.base_url) {
 		eprintln('Please setup an SSH Key pair and add the public key to your remote Git server.')
 		eprintln('Refer to the README for instructions.')
 		exit(1)
 	}
 
-	repositories := match provider {
+	mut fetched_repositories := match provider {
 		.github {
 			github.get_repositories(credentials)!
 		}
 		.gitea {
 			gitea.get_repositories(credentials)!
 		}
+		.forgejo {
+			forgejo.get_repositories(credentials)!
+		}
 		.mock {
 			mock.get_repositories(credentials)!
 		}
 	}
 
+	if use_https {
+		for i, repo in fetched_repositories {
+			if repo.clone_url.len > 0 {
+				fetched_repositories[i] = common.Repository{
+					full_name: repo.full_name
+					repo_name: repo.repo_name
+					ssh_url:   repo.ssh_url
+					clone_url: repo.clone_url.replace('https://', 'https://${credentials.access_token}@')
+					archived:  repo.archived
+				}
+			}
+		}
+	}
+
+	// Filter out archived repos and repos matching the denylist (supports "org/*" patterns)
+	repositories := fetched_repositories.filter(!it.archived
+		&& !is_excluded(it.full_name, credentials.exclude))
+
+	skipped := fetched_repositories.len - repositories.len
+
 	match action {
 		.list {
-			println(repositories.map(it.str()).join_lines())
-			println('Count: ${repositories.len}')
+			for repo in repositories {
+				println('  "${repo.full_name}",')
+			}
+			if skipped > 0 {
+				println('Count: ${repositories.len} (${skipped} excluded)')
+			} else {
+				println('Count: ${repositories.len}')
+			}
 		}
 		.clone {
-			git.clone_all_repositories(repositories, verbose) or {
+			git.clone_all_repositories(repositories, verbose, use_https) or {
 				eprintln('Failed to clone all repositories.')
 				exit(1)
 			}
