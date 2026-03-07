@@ -53,6 +53,15 @@ pub fn pull_repository(repository common.Repository, verbose bool) ! {
 		}
 		return
 	}
+	// Skip empty repositories (cloned but no commits on remote)
+	head_check := os.execute('git -C ${local_path} rev-parse HEAD')
+	if head_check.exit_code != 0 {
+		if verbose {
+			println('Repository ${local_path} has no commits. Skipping pull.')
+		}
+		return
+	}
+
 	if verbose {
 		print('Check if pull is needed for repository: ${local_path} ...')
 	}

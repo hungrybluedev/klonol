@@ -160,6 +160,53 @@ fn test_pull_repository_nonexistent() {
 	}
 }
 
+fn test_pull_repository_empty_repo() {
+	tmp := unique_tmp_dir()
+	defer {
+		os.rmdir_all(tmp) or {}
+	}
+
+	// Create a bare repo with no commits
+	bare_path := setup_bare_repo(tmp) or {
+		assert false, 'setup failed: ${err}'
+		return
+	}
+
+	repo := common.Repository{
+		full_name: 'testowner/empty-repo'
+		repo_name: 'empty-repo'
+		ssh_url:   bare_path
+	}
+
+	clone_dir := os.join_path(tmp, 'clones')
+	os.mkdir_all(clone_dir) or {
+		assert false, 'mkdir failed'
+		return
+	}
+
+	old_dir := os.getwd()
+	os.chdir(clone_dir) or {
+		assert false, 'chdir failed'
+		return
+	}
+	defer {
+		os.chdir(old_dir) or {}
+	}
+
+	// Clone the empty repo
+	clone_repository(repo, false, false) or {
+		assert false, 'clone failed: ${err}'
+		return
+	}
+	assert os.exists(os.join_path(clone_dir, 'testowner', 'empty-repo'))
+
+	// Pull should succeed without error (skips empty repo)
+	pull_repository(repo, true) or {
+		assert false, 'pull_repository should not fail for empty repo: ${err}'
+		return
+	}
+}
+
 fn test_pull_repository_up_to_date() {
 	tmp := unique_tmp_dir()
 	defer {
