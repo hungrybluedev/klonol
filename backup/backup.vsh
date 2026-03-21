@@ -51,6 +51,7 @@ struct Config {
 	b2_id       string
 	b2_key      string
 	keep_last   int
+	push_url    string
 	providers   []ProviderEntry
 }
 
@@ -88,6 +89,7 @@ fn load_config() Config {
 		b2_id:       doc.value_opt('b2.account_id') or { toml.Any('') }.string()
 		b2_key:      doc.value_opt('b2.account_key') or { toml.Any('') }.string()
 		keep_last:   doc.value_opt('retention.keep_last') or { toml.Any(4) }.int()
+		push_url:    doc.value_opt('monitoring.push_url') or { toml.Any('') }.string()
 		providers:   providers
 	}
 }
@@ -339,6 +341,21 @@ fn restic_backup(config Config) int {
 	return failures
 }
 
+// --- Monitoring ---
+
+fn push_status(config Config, status string, msg string, elapsed time.Duration) {
+	if config.push_url.len == 0 {
+		return
+	}
+	ping_secs := int(elapsed / time.second)
+	url := '${config.push_url}?status=${status}&msg=${msg}&ping=${ping_secs}'
+	http.get(url) or {
+		log_msg('WARNING: failed to push status to monitoring: ${err}')
+		return
+	}
+	log_msg('Pushed status "${status}" to monitoring.')
+}
+
 // --- Main ---
 
 log_msg('=== klonol backup started ===')
@@ -358,5 +375,8 @@ elapsed := time.since(start)
 log_msg('=== Backup completed in ${elapsed} with ${total_failures} failure(s) ===')
 
 if total_failures > 0 {
+	push_status(config, 'down', '${total_failures}+failures', elapsed)
 	exit(1)
+} else {
+	push_status(config, 'up', 'OK', elapsed)
 }

@@ -14,6 +14,10 @@ account_key = "your-b2-application-key"
 [retention]
 keep_last = 4
 
+[monitoring]
+# Uptime Kuma push monitor URL (optional, leave empty to disable)
+push_url = ""
+
 [providers]
 list = ["github", "forgejo"]
 # Directory names for each provider (must match the folder names in backup_root)
