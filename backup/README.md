@@ -72,7 +72,21 @@ cp backup.toml.example backup.toml
 # Edit backup.toml with your actual values
 ```
 
-### 5. Initialize the restic repository (one-time)
+### 5. (Optional) Set up monitoring
+
+If you use [Uptime Kuma](https://github.com/louislam/uptime-kuma), add your
+push monitor URL to `backup.toml`:
+
+```toml
+[monitoring]
+push_url = "https://your-uptime-kuma-instance/api/push/your-token"
+```
+
+The script pings this URL after each run with `status=up` on success or
+`status=down` on failure, along with the elapsed time. Leave `push_url`
+empty (or omit the section) to disable monitoring.
+
+### 6. Initialize the restic repository (one-time)
 
 ```bash
 export B2_ACCOUNT_ID="your-key-id"
@@ -85,13 +99,13 @@ restic init
 
 **Save the restic password securely.** You need it to restore backups.
 
-### 6. Test run
+### 7. Test run
 
 ```bash
 v backup.vsh
 ```
 
-### 7. Install cron job
+### 8. Install cron job
 
 ```bash
 crontab -e

@@ -182,7 +182,7 @@ information automatically.
 # Get the version
 klonol --version
 # output:
-# klonol 0.6.x
+# klonol 0.8.x
 
 
 # Get detailed usage information
@@ -190,7 +190,7 @@ klonol -h
 # OR
 klonol --help
 # output:
-# klonol 0.6.x
+# klonol 0.8.x
 # -----------------------------------------------
 # Usage: klonol [options] [ARGS]
 #
@@ -314,6 +314,8 @@ klonol includes a V shell script for fully automated backups with
 [restic](https://restic.net/) and [Backblaze B2](https://www.backblaze.com/cloud-storage).
 It handles updating klonol, cloning/pulling all repos, creating encrypted
 deduplicated snapshots, and pruning old backups — all via a weekly cron job.
+Optional [Uptime Kuma](https://github.com/louislam/uptime-kuma) push monitoring
+notifies you when backups succeed or fail.
 
 See [backup/README.md](backup/README.md) for setup instructions.
 
