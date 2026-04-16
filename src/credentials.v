@@ -99,10 +99,16 @@ fn get_credentials_for(provider common.Provider, path string) !common.Credential
 	}
 
 	token_is_valid := match provider {
-		.github { common.is_access_token_valid(access_token, 'https://api.github.com/user/issues') }
-		.gitea, .forgejo { common.is_access_token_valid(access_token,
-				'https://${base_url}/api/v1/user?access_token=${access_token}') }
-		.mock { true }
+		.github {
+			common.is_access_token_valid(access_token, 'https://api.github.com/user/issues')
+		}
+		.gitea, .forgejo {
+			common.is_access_token_valid(access_token,
+				'https://${base_url}/api/v1/user?access_token=${access_token}')
+		}
+		.mock {
+			true
+		}
 	}
 
 	if !token_is_valid {
