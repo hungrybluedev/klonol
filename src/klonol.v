@@ -31,9 +31,12 @@ fn main() {
 	fp.description('${description}\n${instructions}')
 	fp.skip_executable()
 
-	provider_str := fp.string('provider', `p`, 'github', 'git provider to use (default is github)').to_lower()
-	credentials_path := fp.string('credentials', `c`, 'credentials.toml', 'path to credentials.toml file (default is ./credentials.toml)').to_lower()
-	action_str := fp.string('action', `a`, 'list', 'action to perform [list, clone, pull] ').to_lower()
+	provider_str :=
+		fp.string('provider', `p`, 'github', 'git provider to use (default is github)').to_lower()
+	credentials_path := fp.string('credentials', `c`, 'credentials.toml',
+		'path to credentials.toml file (default is ./credentials.toml)').to_lower()
+	action_str :=
+		fp.string('action', `a`, 'list', 'action to perform [list, clone, pull] ').to_lower()
 	verbose := fp.bool('verbose', `v`, false, 'enable verbose output')
 	use_https := fp.bool('use-https', 0, false, 'clone over HTTPS with access token instead of SSH')
 
@@ -122,7 +125,8 @@ fn main() {
 					full_name: repo.full_name
 					repo_name: repo.repo_name
 					ssh_url:   repo.ssh_url
-					clone_url: repo.clone_url.replace('https://', 'https://${credentials.access_token}@')
+					clone_url: repo.clone_url.replace('https://',
+						'https://${credentials.access_token}@')
 					archived:  repo.archived
 				}
 			}

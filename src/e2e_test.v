@@ -27,7 +27,8 @@ fn e2e_setup_bare_repo(tmp string, name string) !string {
 	if result.exit_code != 0 {
 		return error('Failed to add: ${result.output}')
 	}
-	result = os.execute('git -C ${work_path} -c user.name="Test" -c user.email="test@test.com" commit -m "init"')
+	result =
+		os.execute('git -C ${work_path} -c user.name="Test" -c user.email="test@test.com" commit -m "init"')
 	if result.exit_code != 0 {
 		return error('Failed to commit: ${result.output}')
 	}

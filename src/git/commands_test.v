@@ -34,7 +34,8 @@ fn setup_bare_repo_with_commit(tmp string) !string {
 		return error('Failed to git add: ${result.output}')
 	}
 
-	result = os.execute('git -C ${work_path} -c user.name="Test" -c user.email="test@test.com" commit -m "initial commit"')
+	result =
+		os.execute('git -C ${work_path} -c user.name="Test" -c user.email="test@test.com" commit -m "initial commit"')
 	if result.exit_code != 0 {
 		return error('Failed to git commit: ${result.output}')
 	}
