@@ -19,3 +19,9 @@ vls.log
 .vscode
 
 scratch
+
+# Ignore the backup executable inside backup directory
+backup/backup
+
+# Also ignore the credential file
+backup/backup.toml
