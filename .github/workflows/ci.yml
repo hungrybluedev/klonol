@@ -33,7 +33,7 @@ jobs:
         run: |
           git clone --depth 1 https://github.com/vlang/v "${{ runner.temp }}\vlang"
           cd "${{ runner.temp }}\vlang"
-          .\make.bat
+          .\makev.bat
           echo ${{ runner.temp }}\vlang>>%GITHUB_PATH%
 
       - name: Check if code is formatted
