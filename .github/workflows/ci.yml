@@ -16,13 +16,25 @@ jobs:
     runs-on: ${{ matrix.os }}-latest
 
     steps:
-      - name: Setup Vlang
-        uses: vlang/setup-v@v1.4
-        with:
-          check-latest: true
-
       - name: Checkout ${{ github.event.repository.name }}
         uses: actions/checkout@v6
+
+      - name: Clone and build V (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          git clone --depth 1 https://github.com/vlang/v "${{ runner.temp }}/vlang"
+          cd "${{ runner.temp }}/vlang"
+          make
+          echo "${{ runner.temp }}/vlang" >> "$GITHUB_PATH"
+
+      - name: Clone and build V (Windows)
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          git clone --depth 1 https://github.com/vlang/v "${{ runner.temp }}\vlang"
+          cd "${{ runner.temp }}\vlang"
+          .\make.bat
+          echo ${{ runner.temp }}\vlang>>%GITHUB_PATH%
 
       - name: Check if code is formatted
         run: |
