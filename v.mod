@@ -4,4 +4,5 @@ Module {
 	version: '0.8.1'
 	license: 'MIT'
 	dependencies: []
+	subdirs: ['common', 'forgejo', 'git', 'gitea', 'github', 'mock']
 }

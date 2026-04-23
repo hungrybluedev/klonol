@@ -30,7 +30,7 @@ jobs:
           v fmt -verify .
 
       - name: Run tests
-        run: v test src/
+        run: v test .
 
       - name: Build ${{ github.event.repository.name }}
         run: v .
