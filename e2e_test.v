@@ -6,6 +6,14 @@ import mock
 import os
 import rand
 
+fn testsuite_begin() {
+	mock.use_data_path(os.join_path(os.temp_dir(), 'klonol_mock_e2e_${rand.ulid()}.json'))
+}
+
+fn testsuite_end() {
+	mock.clear()
+}
+
 fn e2e_unique_tmp_dir() string {
 	return os.join_path(os.temp_dir(), 'klonol_e2e_${rand.ulid()}')
 }
