@@ -13,14 +13,7 @@ vls.log
 # Environment files
 *.env
 
-# Credential files.
-#
-# Kept deliberately broad: klonol reads ./credentials.toml by default and any
-# TOML in this repo is assumed to hold access tokens, so the default is to
-# ignore rather than to track. Templates and examples are the explicit
-# exception, since `*.toml` does not match `*.toml.example` anyway -- the rule
-# below is here to make that guarantee obvious and to keep it true if the
-# pattern above is ever tightened.
+# Credential files. Deliberately broad: any TOML here may hold access tokens.
 *.toml
 !*.toml.example
 
