@@ -17,9 +17,8 @@ println('\nCompiling and building executable...')
 if '-fast' in os.args {
 	execute_or_panic('${quoted_path(@VEXE)} . -o bin/klonol')
 } else {
-	// Let V pick the platform default C compiler, so an externally set CC is
-	// honoured. The one exception is Windows, where MSVC is markedly faster
-	// than the bundled tcc for -prod builds.
+	// Let V pick the default C compiler, so an external CC is honoured.
+	// Windows is the exception: MSVC beats the bundled tcc for -prod.
 	mut cmd := '${quoted_path(@VEXE)} -prod'
 	$if windows {
 		cmd += ' -cc msvc'
