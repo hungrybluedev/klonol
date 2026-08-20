@@ -22,14 +22,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu, macos]
-        experimental: [false]
-        include:
-          # Not a merge gate yet. Move into the matrix above once reliably green.
-          - os: windows
-            experimental: true
+        os: [ubuntu, macos, windows]
     runs-on: ${{ matrix.os }}-latest
-    continue-on-error: ${{ matrix.experimental }}
 
     steps:
       - name: Checkout ${{ github.event.repository.name }}
