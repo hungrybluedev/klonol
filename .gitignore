@@ -12,7 +12,10 @@ vls.log
 
 # Environment files
 *.env
+
+# Credential files. Deliberately broad: any TOML here may hold access tokens.
 *.toml
+!*.toml.example
 
 # IDE Files
 .idea
@@ -22,6 +25,3 @@ scratch
 
 # Ignore the backup executable inside backup directory
 backup/backup
-
-# Also ignore the credential file
-backup/backup.toml

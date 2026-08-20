@@ -8,38 +8,74 @@ on:
   schedule:
     - cron: "0 0 * * 4"
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  # Builds against the V commit pinned in .v-version.
   build:
+    name: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        os: ["ubuntu", "macos"]
+        os: [ubuntu, macos, windows]
     runs-on: ${{ matrix.os }}-latest
 
     steps:
       - name: Checkout ${{ github.event.repository.name }}
         uses: actions/checkout@v6
 
-      - name: Clone and build V (Unix)
-        if: runner.os != 'Windows'
-        run: |
-          git clone --depth 1 https://github.com/vlang/v "${{ runner.temp }}/vlang"
-          cd "${{ runner.temp }}/vlang"
-          make
-          echo "${{ runner.temp }}/vlang" >> "$GITHUB_PATH"
+      - name: Setup V (pinned via .v-version)
+        uses: vlang/setup-v@v1.7
+        with:
+          version-file: .v-version
 
-      - name: Clone and build V (Windows)
-        if: runner.os == 'Windows'
-        shell: cmd
-        run: |
-          git clone --depth 1 https://github.com/vlang/v "${{ runner.temp }}\vlang"
-          cd "${{ runner.temp }}\vlang"
-          .\makev.bat -msvc
-          echo ${{ runner.temp }}\vlang>>%GITHUB_PATH%
+      - name: Report V version
+        run: v version
 
       - name: Check if code is formatted
+        run: v fmt -verify .
+
+      - name: Run tests
+        run: v test .
+
+      - name: Build ${{ github.event.repository.name }}
+        run: v . -o klonol-smoke
+
+      - name: Smoke-test the built executable
+        shell: bash
         run: |
-          v fmt -diff .
-          v fmt -verify .
+          bin=./klonol-smoke
+          [ -f "${bin}.exe" ] && bin="${bin}.exe"
+          "$bin" --version
+          "$bin" -p mock -a list
+
+  # Early warning that V master broke us. Never a merge gate; when it goes
+  # red, investigate and then bump .v-version deliberately.
+  canary:
+    name: V master canary
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Checkout ${{ github.event.repository.name }}
+        uses: actions/checkout@v6
+
+      - name: Setup V (latest master)
+        uses: vlang/setup-v@v1.7
+        with:
+          version: master
+          check-latest: true
+
+      - name: Report V version
+        run: v version
+
+      - name: Check if code is formatted
+        run: v fmt -verify .
 
       - name: Run tests
         run: v test .

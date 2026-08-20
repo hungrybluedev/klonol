@@ -1,6 +1,16 @@
 module mock
 
 import common
+import os
+import rand
+
+fn testsuite_begin() {
+	use_data_path(os.join_path(os.temp_dir(), 'klonol_mock_unit_${rand.ulid()}.json'))
+}
+
+fn testsuite_end() {
+	clear()
+}
 
 fn test_set_and_get_repositories() {
 	defer {
