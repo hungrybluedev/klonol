@@ -1,4 +1,7 @@
 version: 2
+
+# V itself can't be tracked here (no V ecosystem; `with:` inputs are ignored) --
+# the master canary job in ci.yml covers .v-version instead.
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -6,3 +9,10 @@ updates:
       interval: "weekly"
       day: "monday"
     open-pull-requests-limit: 5
+    groups:
+      actions:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
