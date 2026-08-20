@@ -1,6 +1,5 @@
 module main
 
-import common
 import os
 
 fn test_create_default_config() {
