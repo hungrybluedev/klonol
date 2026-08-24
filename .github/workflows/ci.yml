@@ -63,7 +63,7 @@ jobs:
 
     steps:
       - name: Checkout ${{ github.event.repository.name }}
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup V (latest master)
         uses: vlang/setup-v@v1.7
