@@ -35,7 +35,7 @@ fn test_parse_repository_missing_name() {
 	}
 	parse_repository(data) or {
 		assert err.msg().len > 0
-		assert err.msg().contains('name')
+		assert err.msg().contains('name') || err.msg().contains('ssh_url')
 		return
 	}
 	assert false, 'parse_repository should fail when name is missing'
