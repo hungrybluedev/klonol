@@ -63,12 +63,22 @@ pub fn (repo Repository) effective_url(use_https bool) string {
 
 pub fn parse_repository(map_data map[string]json2.Any) !Repository {
 	clone_url := if v := map_data['clone_url'] { v.str() } else { '' }
-	full_name := if v := map_data['full_name'] { v.str() } else { map_data['name']!.str() }
+	name := if v := map_data['name'] {
+		v.str()
+	} else {
+		return error('missing required field: name')
+	}
+	ssh_url := if v := map_data['ssh_url'] {
+		v.str()
+	} else {
+		return error('missing required field: ssh_url')
+	}
+	full_name := if v := map_data['full_name'] { v.str() } else { name }
 	archived := if v := map_data['archived'] { v.bool() } else { false }
 	return Repository{
 		full_name: full_name
-		repo_name: map_data['name']!.str()
-		ssh_url:   map_data['ssh_url']!.str()
+		repo_name: name
+		ssh_url:   ssh_url
 		clone_url: clone_url
 		archived:  archived
 	}
