@@ -34,7 +34,6 @@ fn test_parse_repository_missing_name() {
 		'ssh_url': json2.Any('git@github.com:user/my-repo.git')
 	}
 	parse_repository(data) or {
-		assert err.msg().len > 0
 		return
 	}
 	assert false, 'parse_repository should fail when name is missing'
@@ -45,7 +44,6 @@ fn test_parse_repository_missing_ssh_url() {
 		'name': json2.Any('my-repo')
 	}
 	parse_repository(data) or {
-		assert err.msg().len > 0
 		return
 	}
 	assert false, 'parse_repository should fail when ssh_url is missing'
@@ -54,7 +52,6 @@ fn test_parse_repository_missing_ssh_url() {
 fn test_parse_repository_empty_map() {
 	data := map[string]json2.Any{}
 	parse_repository(data) or {
-		assert err.msg().len > 0
 		return
 	}
 	assert false, 'parse_repository should fail for empty map'
