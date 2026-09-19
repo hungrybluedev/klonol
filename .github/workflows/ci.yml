@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Builds against the V commit pinned in .v-version.
+  # Builds against the latest stable V release.
   build:
     name: ${{ matrix.os }}
     strategy:
@@ -29,10 +29,11 @@ jobs:
       - name: Checkout ${{ github.event.repository.name }}
         uses: actions/checkout@v7
 
-      - name: Setup V (pinned via .v-version)
+      - name: Setup V (stable)
         uses: vlang/setup-v@v1.7
         with:
-          version-file: .v-version
+          stable: true
+          check-latest: true
 
       - name: Report V version
         run: v version
@@ -55,7 +56,7 @@ jobs:
           "$bin" -p mock -a list
 
   # Early warning that V master broke us. Never a merge gate; when it goes
-  # red, investigate and then bump .v-version deliberately.
+  # red, investigate before deciding whether to adopt newer V changes.
   canary:
     name: V master canary
     runs-on: ubuntu-latest
