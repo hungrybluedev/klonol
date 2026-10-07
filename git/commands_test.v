@@ -252,3 +252,32 @@ fn test_pull_repository_up_to_date() {
 		return
 	}
 }
+
+fn test_clone_treats_an_option_shaped_url_as_a_repository() {
+	tmp := unique_tmp_dir()
+	os.mkdir_all(tmp) or {
+		assert false, 'mkdir failed'
+		return
+	}
+	old_dir := os.getwd()
+	os.chdir(tmp) or {
+		assert false, 'chdir failed'
+		return
+	}
+	defer {
+		os.chdir(old_dir) or {}
+		os.rmdir_all(tmp) or {}
+	}
+
+	repo := common.Repository{
+		full_name: 'owner/repo'
+		repo_name: 'repo'
+		ssh_url:   '--upload-pack=touch pwned'
+	}
+	clone_repository(repo, false, false) or {
+		assert err.msg().contains("repository '--upload-pack=touch pwned' does not exist"), err.msg()
+		assert !os.exists('pwned')
+		return
+	}
+	assert false, 'cloning from an option-shaped URL succeeded'
+}
