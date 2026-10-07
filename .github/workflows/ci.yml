@@ -70,6 +70,7 @@ jobs:
         with:
           version: master
           check-latest: true
+          cache: false
 
       - name: Report V version
         run: v version
