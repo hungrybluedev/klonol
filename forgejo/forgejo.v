@@ -5,12 +5,13 @@ import net.http
 import x.json2
 import time
 
+fn page_request(page int, credentials common.Credential) http.Request {
+	return common.authorized_get('https://${credentials.base_url}/api/v1/users/${credentials.username}/repos?page=${page}&limit=100',
+		credentials.access_token)
+}
+
 fn get_data_for_page_number(page int, credentials common.Credential) ![]common.Repository {
-	mut request := http.Request{
-		url:    'https://${credentials.base_url}/api/v1/users/${credentials.username}/repos?page=${page}&limit=100&access_token=${credentials.access_token}'
-		method: .get
-	}
-	result := request.do()!
+	result := page_request(page, credentials).do()!
 	raw_data := json2.decode[json2.Any](result.body)!
 	repo_list := raw_data.as_array()
 	repositories := repo_list.map(common.parse_repository(it.as_map())!)
