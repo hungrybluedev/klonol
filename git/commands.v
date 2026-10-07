@@ -5,12 +5,12 @@ import os
 import time
 
 pub fn is_installed() bool {
-	result := os.execute('git --version')
+	result := os.exec(['git', '--version'])
 	return result.exit_code == 0 && result.output.contains('git version')
 }
 
 pub fn can_use_ssh(base_url string) bool {
-	result := os.execute('ssh -T git@${base_url}')
+	result := os.exec(['ssh', '-T', 'git@${base_url}'])
 	return result.output.contains('successfully authenticated')
 }
 
@@ -31,7 +31,7 @@ pub fn clone_repository(repository common.Repository, verbose bool, use_https bo
 	}
 	print('Cloning repository: ${local_path} ...')
 	url := repository.effective_url(use_https)
-	clone_result := os.execute('git clone ${url} ${local_path}')
+	clone_result := os.exec(['git', 'clone', '--', url, local_path])
 	if clone_result.exit_code != 0 {
 		return error('git clone failed for ${local_path}: ${clone_result.output}')
 	}
@@ -54,7 +54,7 @@ pub fn pull_repository(repository common.Repository, verbose bool) ! {
 		return
 	}
 	// Skip empty repositories (cloned but no commits on remote)
-	head_check := os.execute('git -C ${local_path} rev-parse HEAD')
+	head_check := os.exec(['git', '-C', local_path, 'rev-parse', 'HEAD'])
 	if head_check.exit_code != 0 {
 		if verbose {
 			println('Repository ${local_path} has no commits. Skipping pull.')
@@ -66,11 +66,11 @@ pub fn pull_repository(repository common.Repository, verbose bool) ! {
 		print('Check if pull is needed for repository: ${local_path} ...')
 	}
 
-	update_result := os.execute('git -C ${local_path} remote update')
+	update_result := os.exec(['git', '-C', local_path, 'remote', 'update'])
 	if update_result.exit_code != 0 {
 		return error('git remote update failed for ${local_path}: ${update_result.output}')
 	}
-	result := os.execute('git -C ${local_path} status')
+	result := os.exec(['git', '-C', local_path, 'status'])
 	if result.exit_code != 0 {
 		return error('git status failed for ${local_path}: ${result.output}')
 	}
@@ -83,7 +83,7 @@ pub fn pull_repository(repository common.Repository, verbose bool) ! {
 	if verbose {
 		print('Pulling repository: ${local_path} ...')
 	}
-	pull_result := os.execute('git -C ${local_path} pull')
+	pull_result := os.exec(['git', '-C', local_path, 'pull'])
 	if pull_result.exit_code != 0 {
 		return error('git pull failed for ${local_path}: ${pull_result.output}')
 	}
