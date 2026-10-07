@@ -61,9 +61,33 @@ pub fn (repo Repository) effective_url(use_https bool) string {
 	return repo.ssh_url
 }
 
+// is_safe_full_name reports whether name is `owner/repo` or `repo` built only from the
+// characters GitHub, Gitea and Forgejo allow. full_name becomes a local path, so anything
+// else could write outside the working directory.
+fn is_safe_full_name(name string) bool {
+	segments := name.split('/')
+	if segments.len > 2 {
+		return false
+	}
+	for segment in segments {
+		if segment in ['', '.', '..'] {
+			return false
+		}
+		for c in segment {
+			if !(c.is_alnum() || c == `-` || c == `_` || c == `.`) {
+				return false
+			}
+		}
+	}
+	return true
+}
+
 pub fn parse_repository(map_data map[string]json2.Any) !Repository {
 	clone_url := if v := map_data['clone_url'] { v.str() } else { '' }
 	full_name := if v := map_data['full_name'] { v.str() } else { map_data['name']!.str() }
+	if !is_safe_full_name(full_name) {
+		return error('refusing unsafe repository name from the API: ${full_name}')
+	}
 	archived := if v := map_data['archived'] { v.bool() } else { false }
 	return Repository{
 		full_name: full_name

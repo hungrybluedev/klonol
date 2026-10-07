@@ -159,3 +159,88 @@ fn test_credential_default_base_url() {
 	}
 	assert cred.base_url == 'github.com'
 }
+
+struct NameCase {
+	full_name string
+	why       string
+}
+
+const safe_names = [
+	NameCase{'hungrybluedev/klonol', 'this project'},
+	NameCase{'hungrybluedev/SetTheoryForBeginners', 'real Forgejo repo, mixed case'},
+	NameCase{'hungrybluedev/cc-form-formbackend-archived', 'real Forgejo repo, many hyphens'},
+	NameCase{'hungrybluedev/eva1', 'real Forgejo repo, digits'},
+	NameCase{'vlang/v', 'one-letter repo'},
+	NameCase{'hungrybluedev/.github', 'leading dot, the GitHub profile repo convention'},
+	NameCase{'hungrybluedev/hungrybluedev.github.io', 'Pages repo, several dots'},
+	NameCase{'some_org/snake_case_repo', 'underscores'},
+	NameCase{'owner/foo..bar', 'two dots inside a name are not a parent reference'},
+	NameCase{'my-project', 'bare name, the fallback when full_name is missing'},
+	NameCase{'owner/-leading-dash', 'a leading dash is legal; git clone -- keeps it from parsing as an option'},
+]
+
+const unsafe_names = [
+	NameCase{'', 'empty'},
+	NameCase{'.', 'current directory'},
+	NameCase{'..', 'parent directory'},
+	NameCase{'../evil', 'path traversal out of the working directory'},
+	NameCase{'owner/..', 'traversal in the repo segment'},
+	NameCase{'../../.ssh', 'traversal aimed at a dotfile'},
+	NameCase{'owner/.', 'current-directory repo segment'},
+	NameCase{'/etc/passwd', 'absolute path'},
+	NameCase{'owner/', 'empty repo segment'},
+	NameCase{'/repo', 'empty owner segment'},
+	NameCase{'owner//repo', 'empty middle segment'},
+	NameCase{'owner/repo/extra', 'more than owner/repo'},
+	NameCase{'owner\\..\\evil', 'backslash traversal on Windows'},
+	NameCase{'C:/evil', 'Windows drive path'},
+	NameCase{'~/evil', 'home directory shorthand'},
+	NameCase{'owner/re po', 'space'},
+	NameCase{'owner/repo;rm -rf ~', 'shell command separator'},
+	NameCase{'owner/\$(id)', 'shell command substitution'},
+	NameCase{'owner/`id`', 'backtick substitution'},
+	NameCase{'owner/repo\nevil', 'newline'},
+	NameCase{'owner/repo\x00', 'NUL byte'},
+	NameCase{'owner/--upload-pack=touch pwned', 'git option injection, the shape behind CVE-2017-1000117'},
+	NameCase{'owner/répo', 'non-ASCII, which no supported forge allows'},
+]
+
+fn repo_data(full_name string) map[string]json2.Any {
+	return {
+		'full_name': json2.Any(full_name)
+		'name':      json2.Any('repo')
+		'ssh_url':   json2.Any('git@example.com:owner/repo.git')
+	}
+}
+
+fn test_parse_repository_accepts_safe_names() {
+	for c in safe_names {
+		repo := parse_repository(repo_data(c.full_name)) or {
+			assert false, '${c.full_name} (${c.why}) was rejected: ${err}'
+			continue
+		}
+		assert repo.full_name == c.full_name, c.why
+	}
+}
+
+fn test_parse_repository_rejects_unsafe_names() {
+	for c in unsafe_names {
+		parse_repository(repo_data(c.full_name)) or {
+			assert err.msg().contains('unsafe repository name'), c.why
+			continue
+		}
+		assert false, '${c.full_name} (${c.why}) was accepted'
+	}
+}
+
+fn test_parse_repository_rejects_unsafe_fallback_name() {
+	data := {
+		'name':    json2.Any('..')
+		'ssh_url': json2.Any('git@example.com:owner/repo.git')
+	}
+	parse_repository(data) or {
+		assert err.msg().contains('unsafe repository name')
+		return
+	}
+	assert false, 'a name of `..` was accepted through the full_name fallback'
+}
