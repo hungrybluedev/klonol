@@ -271,3 +271,9 @@ access_token = "mytoken123"
 	}
 	assert false, 'load_config should fail when username is missing'
 }
+
+fn test_token_check_url_keeps_the_token_out_of_the_url() {
+	assert token_check_url(.forgejo, 'git.example.com') == 'https://git.example.com/api/v1/user'
+	assert token_check_url(.gitea, 'git.example.com') == 'https://git.example.com/api/v1/user'
+	assert token_check_url(.github, 'github.com') == 'https://api.github.com/user/issues'
+}

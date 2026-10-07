@@ -62,6 +62,14 @@ consider storing the credentials in a .toml file instead. Refer to the
 README.md for more instructions.\n')
 }
 
+fn token_check_url(provider common.Provider, base_url string) string {
+	return match provider {
+		.github { 'https://api.github.com/user/issues' }
+		.gitea, .forgejo { 'https://${base_url}/api/v1/user' }
+		.mock { '' }
+	}
+}
+
 fn get_credentials_for(provider common.Provider, path string) !common.Credential {
 	if provider == .mock {
 		return common.Credential{
@@ -85,7 +93,6 @@ fn get_credentials_for(provider common.Provider, path string) !common.Credential
 		username = os.input_opt('Please enter username: ') or {
 			return error('Please enter your username.')
 		}
-		username
 	}
 
 	mut access_token := credentials.access_token
@@ -95,21 +102,10 @@ fn get_credentials_for(provider common.Provider, path string) !common.Credential
 		access_token = os.input_opt('Please enter access token: ') or {
 			return error('Please enter your access token.')
 		}
-		access_token
 	}
 
-	token_is_valid := match provider {
-		.github {
-			common.is_access_token_valid(access_token, 'https://api.github.com/user/issues')
-		}
-		.gitea, .forgejo {
-			common.is_access_token_valid(access_token,
-				'https://${base_url}/api/v1/user?access_token=${access_token}')
-		}
-		.mock {
-			true
-		}
-	}
+	token_is_valid := provider == .mock
+		|| common.is_access_token_valid(access_token, token_check_url(provider, base_url))
 
 	if !token_is_valid {
 		return error('The access token is invalid.')
