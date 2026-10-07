@@ -1,19 +1,12 @@
 module github
 
 import common
-import net.http
 import x.json2
 import time
 
 fn get_data_for_page_number(page int, credentials common.Credential) ![]common.Repository {
-	mut request := http.Request{
-		url:    'https://api.github.com/user/repos?affiliation=owner,collaborator,organization_member&page=${page}&per_page=100'
-		method: .get
-	}
-	if credentials.access_token != 'unset_value' {
-		request.add_header(.authorization, 'token ${credentials.access_token}')
-	}
-	result := request.do()!
+	result := common.authorized_get('https://api.github.com/user/repos?affiliation=owner,collaborator,organization_member&page=${page}&per_page=100',
+		credentials.access_token).do()!
 	raw_data := json2.decode[json2.Any](result.body)!
 	repo_list := raw_data.as_array()
 	repositories := repo_list.map(common.parse_repository(it.as_map())!)

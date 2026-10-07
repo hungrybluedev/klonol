@@ -44,3 +44,16 @@ fn test_gitea_single_repo() {
 	assert repos[0].repo_name == 'my-project'
 	assert repos[0].ssh_url == 'git@gitea.example.com:user/my-project.git'
 }
+
+fn test_page_request_sends_the_token_in_the_header_not_the_url() {
+	credentials := common.Credential{
+		provider:     .forgejo
+		base_url:     'git.example.com'
+		username:     'someone'
+		access_token: 'secret-token'
+	}
+	request := page_request(2, credentials)
+	assert (request.header.get(.authorization) or { '' }) == 'token secret-token'
+	assert !request.url.contains('secret-token')
+	assert request.url == 'https://git.example.com/api/v1/users/someone/repos?page=2&limit=100'
+}
