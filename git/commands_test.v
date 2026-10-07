@@ -11,7 +11,7 @@ fn unique_tmp_dir() string {
 fn setup_bare_repo(tmp string) !string {
 	os.mkdir_all(tmp)!
 	bare_path := os.join_path(tmp, 'remote.git')
-	result := os.execute('git init --bare ${bare_path}')
+	result := os.exec(['git', 'init', '--bare', bare_path])
 	if result.exit_code != 0 {
 		return error('Failed to init bare repo: ${result.output}')
 	}
@@ -22,25 +22,26 @@ fn setup_bare_repo_with_commit(tmp string) !string {
 	bare_path := setup_bare_repo(tmp)!
 
 	work_path := os.join_path(tmp, 'work')
-	mut result := os.execute('git clone ${bare_path} ${work_path}')
+	mut result := os.exec(['git', 'clone', bare_path, work_path])
 	if result.exit_code != 0 {
 		return error('Failed to clone bare repo: ${result.output}')
 	}
 
 	os.write_file(os.join_path(work_path, 'README.md'), 'initial content')!
 
-	result = os.execute('git -C ${work_path} add .')
+	result = os.exec(['git', '-C', work_path, 'add', '.'])
 	if result.exit_code != 0 {
 		return error('Failed to git add: ${result.output}')
 	}
 
 	result =
-		os.execute('git -C ${work_path} -c user.name="Test" -c user.email="test@test.com" commit -m "initial commit"')
+		os.exec(['git', '-C', work_path, '-c', 'user.name=Test', '-c', 'user.email=test@test.com',
+			'commit', '-m', 'initial commit'])
 	if result.exit_code != 0 {
 		return error('Failed to git commit: ${result.output}')
 	}
 
-	result = os.execute('git -C ${work_path} push')
+	result = os.exec(['git', '-C', work_path, 'push'])
 	if result.exit_code != 0 {
 		return error('Failed to git push: ${result.output}')
 	}

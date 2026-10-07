@@ -22,7 +22,7 @@ fn testsuite_begin() {
 
 	project_dir := os.dir(@FILE)
 	build :=
-		os.execute('${os.quoted_path(@VEXE)} ${os.quoted_path(project_dir)} -o ${os.quoted_path(cli_exe)}')
+		os.exec([@VEXE, project_dir, '-o', cli_exe])
 	assert build.exit_code == 0, 'failed to build the klonol executable: ${build.output}'
 	assert os.exists(cli_exe), 'no executable was produced at ${cli_exe}'
 }
@@ -32,34 +32,37 @@ fn testsuite_end() {
 	os.rm(cli_exe) or {}
 }
 
-fn run_cli(args string) os.Result {
-	return os.execute('${os.quoted_path(cli_exe)} ${args}')
+fn run_cli(args ...string) os.Result {
+	mut cmd := [cli_exe]
+	cmd << args
+	return os.exec(cmd)
 }
 
 // A bare repo with one commit, clonable over a plain filesystem path.
 fn cli_setup_bare_repo(tmp string, repo string) !string {
 	bare_path := os.join_path(tmp, '${repo}.git')
-	mut result := os.execute('git init --bare ${os.quoted_path(bare_path)}')
+	mut result := os.exec(['git', 'init', '--bare', bare_path])
 	if result.exit_code != 0 {
 		return error('failed to init bare repo: ${result.output}')
 	}
 
 	work_path := os.join_path(tmp, '${repo}_work')
-	result = os.execute('git clone ${os.quoted_path(bare_path)} ${os.quoted_path(work_path)}')
+	result = os.exec(['git', 'clone', bare_path, work_path])
 	if result.exit_code != 0 {
 		return error('failed to clone: ${result.output}')
 	}
 	os.write_file(os.join_path(work_path, 'README.md'), 'content for ${repo}')!
-	result = os.execute('git -C ${os.quoted_path(work_path)} add .')
+	result = os.exec(['git', '-C', work_path, 'add', '.'])
 	if result.exit_code != 0 {
 		return error('failed to add: ${result.output}')
 	}
 	result =
-		os.execute('git -C ${os.quoted_path(work_path)} -c user.name="Test" -c user.email="test@test.com" commit -m "init"')
+		os.exec(['git', '-C', work_path, '-c', 'user.name=Test', '-c', 'user.email=test@test.com',
+			'commit', '-m', 'init'])
 	if result.exit_code != 0 {
 		return error('failed to commit: ${result.output}')
 	}
-	result = os.execute('git -C ${os.quoted_path(work_path)} push')
+	result = os.exec(['git', '-C', work_path, 'push'])
 	if result.exit_code != 0 {
 		return error('failed to push: ${result.output}')
 	}
@@ -82,26 +85,26 @@ fn test_cli_help_documents_the_flags() {
 }
 
 fn test_cli_rejects_an_unknown_provider() {
-	result := run_cli('-p bogus -a list')
+	result := run_cli('-p', 'bogus', '-a', 'list')
 	assert result.exit_code == 1
 	assert result.output.contains('Invalid provider: bogus')
 }
 
 fn test_cli_rejects_an_unknown_action() {
-	result := run_cli('-p mock -a bogus')
+	result := run_cli('-p', 'mock', '-a', 'bogus')
 	assert result.exit_code == 1
 	assert result.output.contains('Invalid action: bogus')
 }
 
 fn test_cli_rejects_extra_arguments() {
-	result := run_cli('-p mock -a list unexpected')
+	result := run_cli('-p', 'mock', '-a', 'list', 'unexpected')
 	assert result.exit_code == 1
 	assert result.output.contains('Unnecessary arguments: unexpected')
 }
 
 fn test_cli_lists_nothing_when_provider_is_empty() {
 	mock.clear()
-	result := run_cli('-p mock -a list')
+	result := run_cli('-p', 'mock', '-a', 'list')
 	assert result.exit_code == 0
 	assert result.output.contains('Count: 0')
 }
@@ -126,7 +129,7 @@ fn test_cli_list_omits_archived_repositories() {
 		},
 	])
 
-	result := run_cli('-p mock -a list')
+	result := run_cli('-p', 'mock', '-a', 'list')
 	assert result.exit_code == 0
 	assert result.output.contains('acme/alpha')
 	assert result.output.contains('acme/beta')
@@ -169,7 +172,7 @@ fn test_cli_clone_creates_the_working_copies() {
 		return
 	}
 
-	result := run_cli('-p mock -a clone')
+	result := run_cli('-p', 'mock', '-a', 'clone')
 	assert result.exit_code == 0, 'clone failed: ${result.output}'
 	assert os.exists(os.join_path(destination, 'acme', 'alpha', 'README.md'))
 }
@@ -211,7 +214,7 @@ fn test_cli_use_https_prefers_the_clone_url() {
 		return
 	}
 
-	result := run_cli('-p mock -a clone --use-https')
+	result := run_cli('-p', 'mock', '-a', 'clone', '--use-https')
 	assert result.exit_code == 0, 'clone over https failed: ${result.output}'
 	assert os.exists(os.join_path(destination, 'acme', 'gamma', 'README.md'))
 }
@@ -251,13 +254,13 @@ fn test_cli_clone_is_idempotent() {
 		return
 	}
 
-	first := run_cli('-p mock -a clone')
+	first := run_cli('-p', 'mock', '-a', 'clone')
 	assert first.exit_code == 0, 'first clone failed: ${first.output}'
 
-	second := run_cli('-p mock -a clone -v')
+	second := run_cli('-p', 'mock', '-a', 'clone', '-v')
 	assert second.exit_code == 0, 'second clone failed: ${second.output}'
 	assert second.output.contains('already exists')
 
-	pull := run_cli('-p mock -a pull -v')
+	pull := run_cli('-p', 'mock', '-a', 'pull', '-v')
 	assert pull.exit_code == 0, 'pull failed: ${pull.output}'
 }

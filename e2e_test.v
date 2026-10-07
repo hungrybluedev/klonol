@@ -20,27 +20,28 @@ fn e2e_unique_tmp_dir() string {
 
 fn e2e_setup_bare_repo(tmp string, name string) !string {
 	bare_path := os.join_path(tmp, '${name}.git')
-	mut result := os.execute('git init --bare ${bare_path}')
+	mut result := os.exec(['git', 'init', '--bare', bare_path])
 	if result.exit_code != 0 {
 		return error('Failed to init bare repo: ${result.output}')
 	}
 
 	work_path := os.join_path(tmp, '${name}_work')
-	result = os.execute('git clone ${bare_path} ${work_path}')
+	result = os.exec(['git', 'clone', bare_path, work_path])
 	if result.exit_code != 0 {
 		return error('Failed to clone: ${result.output}')
 	}
 	os.write_file(os.join_path(work_path, 'README.md'), 'initial content for ${name}')!
-	result = os.execute('git -C ${work_path} add .')
+	result = os.exec(['git', '-C', work_path, 'add', '.'])
 	if result.exit_code != 0 {
 		return error('Failed to add: ${result.output}')
 	}
 	result =
-		os.execute('git -C ${work_path} -c user.name="Test" -c user.email="test@test.com" commit -m "init"')
+		os.exec(['git', '-C', work_path, '-c', 'user.name=Test', '-c', 'user.email=test@test.com',
+			'commit', '-m', 'init'])
 	if result.exit_code != 0 {
 		return error('Failed to commit: ${result.output}')
 	}
-	result = os.execute('git -C ${work_path} push')
+	result = os.exec(['git', '-C', work_path, 'push'])
 	if result.exit_code != 0 {
 		return error('Failed to push: ${result.output}')
 	}

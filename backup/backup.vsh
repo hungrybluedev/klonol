@@ -10,22 +10,13 @@ fn log_msg(msg string) {
 	println('[${t.format_ss()}] ${msg}')
 }
 
-fn run_cmd(cmd string) (int, string) {
-	log_msg('Running: ${cmd}')
-	result := execute(cmd)
+fn run_cmd(args []string) (int, string) {
+	log_msg('Running: ${args.join(' ')}')
+	result := exec(args)
 	if result.exit_code != 0 {
 		log_msg('FAILED (exit ${result.exit_code}): ${result.output}')
 	}
 	return result.exit_code, result.output
-}
-
-fn run_cmd_must(cmd string) string {
-	code, output := run_cmd(cmd)
-	if code != 0 {
-		log_msg('FATAL: command failed, aborting.')
-		exit(1)
-	}
-	return output
 }
 
 fn capitalize_provider(provider string) string {
@@ -132,7 +123,7 @@ fn get_installed_version(klonol_bin string) string {
 	if !exists(klonol_bin) {
 		return ''
 	}
-	result := execute('${klonol_bin} --version')
+	result := exec([klonol_bin, '--version'])
 	if result.exit_code != 0 {
 		return ''
 	}
@@ -209,14 +200,14 @@ fn update_klonol(config Config) {
 	}
 
 	zip_path := join_path(tmp_dir, 'klonol.zip')
-	dl_result := execute('curl -sL -o ${zip_path} ${download_url}')
+	dl_result := exec(['curl', '-sL', '-o', zip_path, download_url])
 	if dl_result.exit_code != 0 {
 		log_msg('WARNING: download failed: ${dl_result.output}')
 		rmdir_all(tmp_dir) or {}
 		return
 	}
 
-	unzip_result := execute('unzip -o ${zip_path} -d ${tmp_dir}')
+	unzip_result := exec(['unzip', '-o', zip_path, '-d', tmp_dir])
 	if unzip_result.exit_code != 0 {
 		log_msg('WARNING: unzip failed: ${unzip_result.output}')
 		rmdir_all(tmp_dir) or {}
@@ -249,7 +240,7 @@ fn update_klonol(config Config) {
 
 fn update_v() {
 	log_msg('Updating V compiler...')
-	code, _ := run_cmd('${quoted_path(@VEXE)} up')
+	code, _ := run_cmd([@VEXE, 'up'])
 	if code != 0 {
 		log_msg('WARNING: v up failed, continuing with current version')
 	}
@@ -278,14 +269,15 @@ fn sync_providers(config Config) int {
 		}
 
 		// Clone new repos
-		clone_code, _ := run_cmd('${config.klonol_bin} -p ${entry.name} -a clone --use-https')
+		clone_code, _ := run_cmd([config.klonol_bin, '-p', entry.name, '-a', 'clone', '--use-https'])
 		if clone_code != 0 {
 			log_msg('WARNING: clone failed for ${entry.name}')
 			failures++
 		}
 
 		// Pull existing repos
-		pull_code, _ := run_cmd('${config.klonol_bin} -p ${entry.name} -a pull --use-https -v')
+		pull_code, _ := run_cmd([config.klonol_bin, '-p', entry.name, '-a', 'pull', '--use-https',
+			'-v'])
 		if pull_code != 0 {
 			log_msg('WARNING: pull failed for ${entry.name}')
 			failures++
@@ -321,18 +313,20 @@ fn restic_backup(config Config) int {
 		return 1
 	}
 
-	paths_str := backup_paths.join(' ')
 	tag := time.now().custom_format('YYYY-MM-DD')
 
 	log_msg('--- Running restic backup ---')
-	code, _ := run_cmd('restic backup ${paths_str} --tag klonol-${tag} --exclude .DS_Store')
+	mut backup_args := ['restic', 'backup']
+	backup_args << backup_paths
+	backup_args << ['--tag', 'klonol-${tag}', '--exclude', '.DS_Store']
+	code, _ := run_cmd(backup_args)
 	if code != 0 {
 		log_msg('ERROR: restic backup failed')
 		failures++
 	}
 
 	log_msg('--- Running restic forget + prune (keep last ${config.keep_last}) ---')
-	forget_code, _ := run_cmd('restic forget --keep-last ${config.keep_last} --prune')
+	forget_code, _ := run_cmd(['restic', 'forget', '--keep-last', '${config.keep_last}', '--prune'])
 	if forget_code != 0 {
 		log_msg('ERROR: restic forget/prune failed')
 		failures++
